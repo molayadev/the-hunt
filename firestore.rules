@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function isOwner(docId) {
+      return request.auth != null && docId.split('_')[0] == request.auth.uid;
+    }
+
+    match /hunts/{huntId} {
+      allow read: if resource.data.status == 'live';
+      allow write: if false;
+      match /stations/{document=**} { allow read, write: if false; } // ← clave
+    }
+
+    match /qrTokens/{token} { allow read, write: if false; }
+
+    match /progress/{progressId} {
+      allow read: if isOwner(progressId);
+      allow write: if false;
+      match /cards/{stationId}  { allow read: if isOwner(progressId); allow write: if false; }
+      match /events/{eventId}   { allow read: if isOwner(progressId); allow write: if false; }
+    }
+
+    match /users/{uid} {
+      allow read, update: if request.auth.uid == uid;
+      match /pushTokens/{token} { allow read, write: if request.auth.uid == uid; }
+    }
+
+    // /redemptions/{redemptionId}: sin regla explícita → denegado por
+    // defecto (Firestore deniega todo lo que no se concede expresamente).
+    // Solo las Cloud Functions (Admin SDK) lo leen y escriben.
+  }
+}
