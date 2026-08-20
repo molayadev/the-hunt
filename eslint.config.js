@@ -68,7 +68,7 @@ export default ts.config(
           patterns: [
             {
               group: ['firebase/*'],
-              message: 'Firebase solo se importa desde shared/lib/firebase.',
+              message: 'Firebase must only be imported from shared/lib/firebase.',
             },
           ],
         },
@@ -83,7 +83,7 @@ export default ts.config(
         'error',
         {
           name: 'Date',
-          message: 'Inyecta el instante como parámetro. domain/ debe ser determinista.',
+          message: 'Inject the instant as a parameter. domain/ must stay deterministic.',
         },
       ],
     },

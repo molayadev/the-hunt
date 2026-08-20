@@ -52,8 +52,8 @@ export default defineConfig({
     globals: false,
     setupFiles: ['./src/test/setup.ts'],
     css: true,
-    // functions/** y tests/rules/** requieren el emulador de Firebase y
-    // corren aparte en CI (ver package.json y §11.3 del plan).
+    // functions/** and tests/rules/** need the Firebase emulator and run
+    // separately in CI (see package.json and PLAN.md §11.3).
     exclude: ['node_modules/**', 'functions/**', 'tests/rules/**', 'e2e/**'],
     coverage: {
       provider: 'v8',

@@ -6,11 +6,9 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     hookTimeout: 20_000,
     testTimeout: 20_000,
-    // Todos los ficheros comparten el mismo emulador de Firestore (estado
-    // externo real, no en memoria por test): en paralelo, un
-    // clearFirestoreEmulator() de un fichero borra los datos de otro a
-    // mitad de ejecución. Ver la propia sección de utillaje del plan
-    // (§7.4) sobre no complicar la infra de tests más de lo necesario.
+    // All files share one Firestore emulator instance (real external state,
+    // not per-test); running in parallel lets one file's
+    // clearFirestoreEmulator() wipe another file's data mid-run.
     fileParallelism: false,
   },
 });
