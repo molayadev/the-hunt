@@ -2,13 +2,19 @@ import { initializeApp } from 'firebase/app';
 import { connectAuthEmulator, getAuth, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { connectFunctionsEmulator, getFunctions, httpsCallable } from 'firebase/functions';
 import {
+  collection,
   connectFirestoreEmulator,
+  getDocs,
   initializeFirestore,
+  limit,
   persistentLocalCache,
   persistentMultipleTabManager,
+  query,
+  where,
 } from 'firebase/firestore';
 
 export { onAuthStateChanged, signInAnonymously, httpsCallable };
+export { collection, getDocs, limit, query, where };
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? 'demo-api-key',
