@@ -97,10 +97,14 @@ export default ts.config(
       ...vitest.configs.recommended.rules,
       'testing-library/no-node-access': 'error',
       'testing-library/prefer-user-event': 'error',
+      'vitest/expect-expect': [
+        'error',
+        { assertFunctionNames: ['expect', 'assertFails', 'assertSucceeds'] },
+      ],
     },
   },
   {
-    files: ['*.config.{js,ts}', 'src/shared/lib/firebase.ts', 'functions/**'],
+    files: ['*.config.{js,ts}', 'src/shared/lib/firebase.ts', 'functions/**', 'tests/rules/**'],
     languageOptions: { globals: { ...globals.node } },
     rules: { 'no-restricted-imports': 'off' },
   },
