@@ -4,10 +4,6 @@ import { withServerNow } from '../lib/envelope';
 import { db } from '../lib/firestore';
 import type { CardDoc, HuntDoc, ProgressDoc, QrTokenDoc, StationDoc } from '../lib/schema';
 
-// El evento de desbloqueo usa clientRequestId como ID de documento (no un ID
-// aleatorio con un campo aparte): así la idempotencia es un simple
-// "lee-y-si-no-existe-escribe" dentro de la transacción, sin necesitar una
-// query. Ver PLAN.md §3 (events) y §5.3 (test 36).
 export async function redeemQrHandler(input: RedeemQrInput, uid: string): Promise<RedeemQrResult> {
   return db.runTransaction(async (tx) => {
     const tokenRef = db.doc(`qrTokens/${input.token}`);

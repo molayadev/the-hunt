@@ -64,7 +64,7 @@ const submit = (value: string, clientRequestId = randomUUID()) =>
   );
 
 describe('submitAnswerHandler', () => {
-  it('respuesta correcta resuelve, emite premio, revela vecinas y recalcula el progreso', async () => {
+  it('a correct answer solves the station, issues the prize, reveals neighbours and recalculates progress', async () => {
     await seedHunt();
     const result = await submit('la torre');
     expect(result.ok).toBe(true);
@@ -84,13 +84,13 @@ describe('submitAnswerHandler', () => {
     );
   });
 
-  it('respuesta correcta con distinta capitalización y tildes es válida', async () => {
+  it('a correct answer with different capitalization and accents is valid', async () => {
     await seedHunt();
     const result = await submit('¡LA TÓRRE!');
     expect(result.ok).toBe(true);
   });
 
-  it('respuesta incorrecta registra un fallo, no revela nada y no filtra la correcta', async () => {
+  it('an incorrect answer records a failure, reveals nothing and never leaks the correct answer', async () => {
     await seedHunt();
     const result = await submit('el ayuntamiento');
     expect(result).toMatchObject({ ok: false, solved: false });
@@ -103,7 +103,7 @@ describe('submitAnswerHandler', () => {
     expect(progress.exists).toBe(false);
   });
 
-  it('sin intentos disponibles lanza resource-exhausted con retryAt, sin registrar un fallo más', async () => {
+  it('with no attempts left throws resource-exhausted with retryAt, without recording another failure', async () => {
     await seedHunt({ maxAttempts: 1 });
     await submit('mal 1');
 
@@ -115,7 +115,7 @@ describe('submitAnswerHandler', () => {
     expect(card.data()?.recentFailures).toHaveLength(1);
   });
 
-  it('el error resource-exhausted incluye retryAt en los detalles', async () => {
+  it('the resource-exhausted error includes retryAt in its details', async () => {
     await seedHunt({ maxAttempts: 1 });
     await submit('mal 1');
 
@@ -126,17 +126,14 @@ describe('submitAnswerHandler', () => {
     expect(typeof (httpsError.details as { retryAt: string }).retryAt).toBe('string');
   });
 
-  it('con el reloj del cliente adelantado, el servidor sigue rechazando', async () => {
+  it('with the client clock skewed ahead, the server still rejects', async () => {
     await seedHunt({ maxAttempts: 1 });
     await submit('mal 1');
 
-    // El servidor calcula `now` con Date.now() propio; el cliente no puede
-    // pasar su reloj adelantado como parámetro (no forma parte de
-    // SubmitAnswerInput), así que esto queda garantizado por diseño.
     await expect(submit('mal 2')).rejects.toMatchObject({ code: 'resource-exhausted' });
   });
 
-  it('sobre una estación no desbloqueada devuelve permission-denied', async () => {
+  it('on a station that is not unlocked returns permission-denied', async () => {
     await seedHunt();
     await expect(
       submitAnswerHandler(
@@ -151,7 +148,7 @@ describe('submitAnswerHandler', () => {
     ).rejects.toMatchObject({ code: 'permission-denied' });
   });
 
-  it('dos envíos concurrentes con 1 intento: solo uno se procesa', async () => {
+  it('two concurrent submissions with 1 attempt left: only one is processed', async () => {
     await seedHunt({ maxAttempts: 1 });
     const results = await Promise.allSettled([submit('mal a'), submit('mal b')]);
     const card = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${STATION_ID}`).get();
@@ -160,7 +157,7 @@ describe('submitAnswerHandler', () => {
     expect(fulfilled.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('reintento con el mismo clientRequestId devuelve el mismo resultado sin registrar un fallo nuevo', async () => {
+  it('a retry with the same clientRequestId returns the same result without recording a new failure', async () => {
     await seedHunt();
     const clientRequestId = randomUUID();
     const first = await submit('mal', clientRequestId);
@@ -171,7 +168,7 @@ describe('submitAnswerHandler', () => {
     expect(card.data()?.recentFailures).toHaveLength(1);
   });
 
-  it('toda llamada devuelve serverNow', async () => {
+  it('every call returns serverNow', async () => {
     await seedHunt();
     const result = await submit('la torre');
     expect(result.serverNow).toBeTypeOf('string');

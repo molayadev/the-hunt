@@ -13,9 +13,6 @@ import type { CardDoc, HuntDoc, ProgressDoc, StationAnswerDoc, StationDoc } from
 const toIso = (at: number | null): string | null =>
   at === null ? null : new Date(at).toISOString();
 
-// Igual que en redeemQr: el evento usa clientRequestId como ID de documento,
-// y guarda el resultado ya calculado bajo `result` para poder devolverlo tal
-// cual en un reintento sin volver a tocar el saldo de intentos (test 41).
 export async function submitAnswerHandler(
   input: SubmitAnswerInput,
   uid: string,
@@ -41,7 +38,7 @@ export async function submitAnswerHandler(
     }
 
     if (!cardSnap.exists || (cardSnap.data() as CardDoc).state !== 'unlocked') {
-      throw new HttpsError('permission-denied', 'La estación no está desbloqueada.');
+      throw new HttpsError('permission-denied', 'The station is not unlocked.');
     }
 
     const hunt = huntSnap.data() as HuntDoc;
@@ -57,11 +54,9 @@ export async function submitAnswerHandler(
     const now = Date.now();
 
     if (attemptsLeft(failures, now, policy) === 0) {
-      // Rechazo puro: la petición no llega a procesarse, así que no hay
-      // nada que hacer idempotente ni ningún fallo nuevo que registrar
-      // (PLAN.md §5.3, tests 40-41). Por eso lanza en vez de devolver un
-      // resultado — a diferencia de una respuesta incorrecta, que sí cuenta.
-      throw new HttpsError('resource-exhausted', 'Sin intentos disponibles.', {
+      // Thrown, not returned: an exhausted-attempts rejection never reaches the
+      // idempotency/failure accounting below, unlike a wrong-answer response.
+      throw new HttpsError('resource-exhausted', 'No attempts remaining.', {
         retryAt: toIso(retryAt(failures, now, policy)),
       });
     }

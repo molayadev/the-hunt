@@ -36,7 +36,7 @@ async function seedLiveHuntWithToken(token: string) {
 }
 
 describe('redeemQrHandler', () => {
-  it('token inexistente → invalid_token, cero escrituras', async () => {
+  it('a nonexistent token returns invalid_token and writes nothing', async () => {
     const result = await redeemQrHandler({ token: 'ghost', clientRequestId: randomUUID() }, UID);
     expect(result).toMatchObject({ ok: false, reason: 'invalid_token' });
 
@@ -44,7 +44,7 @@ describe('redeemQrHandler', () => {
     expect(progress.exists).toBe(false);
   });
 
-  it('token de una ruta no live → hunt_not_live', async () => {
+  it('a token for a non-live hunt returns hunt_not_live', async () => {
     await seedLiveHuntWithToken('qr-draft');
     await db.doc(`hunts/${HUNT_ID}`).update({ status: 'draft' });
 
@@ -52,7 +52,7 @@ describe('redeemQrHandler', () => {
     expect(result).toMatchObject({ ok: false, reason: 'hunt_not_live' });
   });
 
-  it('token válido crea la card en unlocked y no registra ningún fallo', async () => {
+  it('a valid token creates the card unlocked and records no failure', async () => {
     await seedLiveHuntWithToken('qr-1');
 
     const result = await redeemQrHandler({ token: 'qr-1', clientRequestId: randomUUID() }, UID);
@@ -67,7 +67,7 @@ describe('redeemQrHandler', () => {
     expect(card.data()?.recentFailures).toEqual([]);
   });
 
-  it('reintento con el mismo clientRequestId devuelve la misma respuesta y un único desbloqueo', async () => {
+  it('a retry with the same clientRequestId returns the same response and a single unlock', async () => {
     await seedLiveHuntWithToken('qr-1');
     const clientRequestId = randomUUID();
 
@@ -82,7 +82,7 @@ describe('redeemQrHandler', () => {
     expect(events.size).toBe(1);
   });
 
-  it('devuelve serverNow', async () => {
+  it('returns serverNow', async () => {
     await seedLiveHuntWithToken('qr-1');
     const result = await redeemQrHandler({ token: 'qr-1', clientRequestId: randomUUID() }, UID);
     expect(result.serverNow).toBeTypeOf('string');

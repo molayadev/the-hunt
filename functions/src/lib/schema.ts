@@ -1,7 +1,4 @@
-// Formas de los documentos de Firestore que solo tocan las Cloud Functions
-// (Admin SDK). Ver PLAN.md §3. El cliente nunca lee estas colecciones
-// directamente: firestore.rules se lo impide.
-
+// Admin-SDK-only document shapes; firestore.rules blocks all direct client access.
 export interface AttemptPolicyDoc {
   readonly maxAttempts: number;
   readonly windowHours: number;
@@ -72,7 +69,7 @@ export interface ProgressDoc {
   readonly solvedCount: number;
   readonly totalCount: number;
   readonly completionPct: number;
-  readonly recentFailures?: readonly number[]; // solo si attemptPolicy.scope === 'hunt'
+  readonly recentFailures?: readonly number[]; // present only when attemptPolicy.scope === 'hunt'
   readonly completedAt?: number;
 }
 
@@ -84,6 +81,6 @@ export interface CardDoc {
   readonly clue: string;
   readonly challenge: ChallengeDoc;
   readonly state: CardStateDoc;
-  readonly recentFailures: readonly number[]; // acotado a maxAttempts
+  readonly recentFailures: readonly number[]; // bounded to maxAttempts entries
   readonly prize?: PrizeDoc;
 }
