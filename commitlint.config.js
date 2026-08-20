@@ -1,0 +1,30 @@
+export default {
+  extends: ['@commitlint/config-conventional'],
+  rules: {
+    'scope-enum': [
+      2,
+      'always',
+      [
+        'auth',
+        'hunt',
+        'station',
+        'scan',
+        'attempts',
+        'progress',
+        'prizes',
+        'notifications',
+        'ui',
+        'theme',
+        'pwa',
+        'rules',
+        'functions',
+        'domain',
+        'deps',
+        'ci',
+        'config',
+      ],
+    ],
+    'subject-case': [2, 'always', 'sentence-case'],
+    'body-max-line-length': [0],
+  },
+};
