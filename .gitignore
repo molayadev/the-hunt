@@ -38,3 +38,4 @@ ui-debug.log
 *.sln
 *.sw?
 node_modules/
+functions/node_modules/
