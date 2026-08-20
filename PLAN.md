@@ -820,12 +820,14 @@ feat(functions): Implement submitAnswer callable inside a transaction
 feat(functions): Enforce App Check on all callables
 ```
 
-### Fase 3 — Cliente ← siguiente
+### Fase 3 — Cliente ← en curso
 
 ```
-feat(auth): Add anonymous sign-in with account linking
-test(hunt): Add failing specs for hunt join by code
-feat(hunt): Implement join flow and hunt overview screen
+feat(config): Initialize the Firebase client SDK ✅
+feat(auth): Add anonymous sign-in session ✅ (falta account linking)
+test(hunt): Add failing specs for join code normalization ✅
+feat(hunt): Implement join code normalization ✅
+feat(hunt): Implement join-by-code flow ✅ (falta la pantalla de resumen de ruta)
 test(station): Add failing specs for locked station content leakage
 feat(station): Implement station card with clue and challenge panel
 test(attempts): Add failing specs for attempt meter countdown state
