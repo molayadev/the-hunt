@@ -6,7 +6,7 @@ service cloud.firestore {
     }
 
     match /hunts/{huntId} {
-      allow read: if resource.data.status == 'live';
+      allow read: if request.auth != null && resource.data.status == 'live';
       allow write: if false;
       match /stations/{document=**} { allow read, write: if false; }
     }
