@@ -16,7 +16,10 @@ export function useAnonymousAuthSession(): Session {
           setSession({ uid: user.uid, isLoading: false });
           return;
         }
-        void signInAnonymously(auth);
+        signInAnonymously(auth).catch((error: unknown) => {
+          console.error('Anonymous sign-in failed', error);
+          setSession({ uid: null, isLoading: false });
+        });
       }),
     [],
   );
