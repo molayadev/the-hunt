@@ -9,6 +9,10 @@ describe('completionPct', () => {
     expect(completionPct(emptyProgress, 12)).toBe(0);
   });
 
+  it('una ruta sin estaciones no divide por cero', () => {
+    expect(completionPct(emptyProgress, 0)).toBe(0);
+  });
+
   it('resolver solo la estación final de 12 → 8%, no 100%', () => {
     const state = applySolve(
       emptyProgress,
@@ -52,6 +56,17 @@ describe('vecinas reveladas', () => {
     );
     expect(state.revealedStationIds).toEqual(expect.arrayContaining(['s4', 's6']));
     expect(state.revealedStationIds).toHaveLength(2);
+  });
+
+  it('resolver una estación fuera de la lista ordenada no revela nada', () => {
+    const state = applySolve(
+      emptyProgress,
+      { type: 'solve', stationId: 'ghost' },
+      stations12,
+      12,
+      now,
+    );
+    expect(state.revealedStationIds).toEqual([]);
   });
 
   it('resolver la primera estación revela solo la 2 (no hay anterior)', () => {

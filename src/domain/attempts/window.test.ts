@@ -48,6 +48,11 @@ describe('retryAt', () => {
     const failures = [oldest, now - 5 * HOUR, now - MIN];
     expect(retryAt(failures, now, policy)).toBe(oldest + policy.windowMs);
   });
+
+  it('con una política de 0 intentos y sin fallos registrados, no hay nada que esperar', () => {
+    const zeroAttempts: AttemptPolicy = { maxAttempts: 0, windowMs: policy.windowMs };
+    expect(retryAt([], now, zeroAttempts)).toBeNull();
+  });
 });
 
 describe('trimFailures', () => {
