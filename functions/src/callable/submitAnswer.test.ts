@@ -1,0 +1,180 @@
+import { randomUUID } from 'node:crypto';
+import { HttpsError } from 'firebase-functions/v2/https';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { db } from '../lib/firestore';
+import { clearFirestoreEmulator } from '../test/emulator';
+import { submitAnswerHandler } from './submitAnswer';
+
+const UID = 'player-1';
+const HUNT_ID = 'hunt-1';
+const STATION_ID = 'station-5';
+const NEXT_STATION_ID = 'station-6';
+const PREV_STATION_ID = 'station-4';
+
+beforeEach(async () => {
+  await clearFirestoreEmulator();
+});
+
+async function seedHunt(
+  overrides: { maxAttempts?: number; windowHours?: number; scope?: 'station' | 'hunt' } = {},
+) {
+  await db.doc(`hunts/${HUNT_ID}`).set({
+    title: 'Cumpleaños de prueba',
+    status: 'live',
+    stationCount: 3,
+    attemptPolicy: {
+      maxAttempts: overrides.maxAttempts ?? 3,
+      windowHours: overrides.windowHours ?? 24,
+      scope: overrides.scope ?? 'station',
+    },
+  });
+
+  const stations = [
+    { id: PREV_STATION_ID, order: 4 },
+    { id: STATION_ID, order: 5 },
+    { id: NEXT_STATION_ID, order: 6 },
+  ];
+  for (const s of stations) {
+    await db.doc(`hunts/${HUNT_ID}/stations/${s.id}`).set({
+      order: s.order,
+      title: `Estación ${String(s.order)}`,
+      clue: `Pista de la estación ${String(s.order)}`,
+      challenge: { type: 'text', question: '¿Qué edificio es?' },
+      prize: { kind: 'digital', title: 'Premio digital' },
+    });
+  }
+  await db.doc(`hunts/${HUNT_ID}/stations/${STATION_ID}/secret/answer`).set({
+    acceptedAnswers: ['la torre', 'torre'],
+  });
+
+  await db.doc(`progress/${UID}_${HUNT_ID}/cards/${STATION_ID}`).set({
+    order: 5,
+    title: 'Estación 5',
+    clue: 'Pista de la estación 5',
+    challenge: { type: 'text', question: '¿Qué edificio es?' },
+    state: 'unlocked',
+    recentFailures: [],
+  });
+}
+
+const submit = (value: string, clientRequestId = randomUUID()) =>
+  submitAnswerHandler(
+    { huntId: HUNT_ID, stationId: STATION_ID, answer: { kind: 'text', value }, clientRequestId },
+    UID,
+  );
+
+describe('submitAnswerHandler', () => {
+  it('respuesta correcta resuelve, emite premio, revela vecinas y recalcula el progreso', async () => {
+    await seedHunt();
+    const result = await submit('la torre');
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('expected ok result');
+    expect(result.solved).toBe(true);
+    expect(result.prize).toEqual({ kind: 'digital', title: 'Premio digital' });
+    expect(new Set(result.revealed)).toEqual(new Set([PREV_STATION_ID, NEXT_STATION_ID]));
+    expect(result.completionPct).toBe(33);
+
+    const card = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${STATION_ID}`).get();
+    expect(card.data()?.state).toBe('solved');
+
+    const progress = await db.doc(`progress/${UID}_${HUNT_ID}`).get();
+    expect(progress.data()?.solvedStationIds).toEqual([STATION_ID]);
+    expect(new Set(progress.data()?.revealedStationIds as string[])).toEqual(
+      new Set([PREV_STATION_ID, NEXT_STATION_ID]),
+    );
+  });
+
+  it('respuesta correcta con distinta capitalización y tildes es válida', async () => {
+    await seedHunt();
+    const result = await submit('¡LA TÓRRE!');
+    expect(result.ok).toBe(true);
+  });
+
+  it('respuesta incorrecta registra un fallo, no revela nada y no filtra la correcta', async () => {
+    await seedHunt();
+    const result = await submit('el ayuntamiento');
+    expect(result).toMatchObject({ ok: false, solved: false });
+    expect(JSON.stringify(result)).not.toContain('torre');
+
+    const card = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${STATION_ID}`).get();
+    expect(card.data()?.recentFailures).toHaveLength(1);
+
+    const progress = await db.doc(`progress/${UID}_${HUNT_ID}`).get();
+    expect(progress.exists).toBe(false);
+  });
+
+  it('sin intentos disponibles lanza resource-exhausted con retryAt, sin registrar un fallo más', async () => {
+    await seedHunt({ maxAttempts: 1 });
+    await submit('mal 1');
+
+    await expect(submit('mal 2')).rejects.toMatchObject({
+      code: 'resource-exhausted',
+    });
+
+    const card = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${STATION_ID}`).get();
+    expect(card.data()?.recentFailures).toHaveLength(1);
+  });
+
+  it('el error resource-exhausted incluye retryAt en los detalles', async () => {
+    await seedHunt({ maxAttempts: 1 });
+    await submit('mal 1');
+
+    const error: unknown = await submit('mal 2').catch((caught: unknown) => caught);
+    expect(error).toBeInstanceOf(HttpsError);
+    const httpsError = error as HttpsError;
+    expect(httpsError.code).toBe('resource-exhausted');
+    expect(typeof (httpsError.details as { retryAt: string }).retryAt).toBe('string');
+  });
+
+  it('con el reloj del cliente adelantado, el servidor sigue rechazando', async () => {
+    await seedHunt({ maxAttempts: 1 });
+    await submit('mal 1');
+
+    // El servidor calcula `now` con Date.now() propio; el cliente no puede
+    // pasar su reloj adelantado como parámetro (no forma parte de
+    // SubmitAnswerInput), así que esto queda garantizado por diseño.
+    await expect(submit('mal 2')).rejects.toMatchObject({ code: 'resource-exhausted' });
+  });
+
+  it('sobre una estación no desbloqueada devuelve permission-denied', async () => {
+    await seedHunt();
+    await expect(
+      submitAnswerHandler(
+        {
+          huntId: HUNT_ID,
+          stationId: NEXT_STATION_ID,
+          answer: { kind: 'text', value: 'lo que sea' },
+          clientRequestId: randomUUID(),
+        },
+        UID,
+      ),
+    ).rejects.toMatchObject({ code: 'permission-denied' });
+  });
+
+  it('dos envíos concurrentes con 1 intento: solo uno se procesa', async () => {
+    await seedHunt({ maxAttempts: 1 });
+    const results = await Promise.allSettled([submit('mal a'), submit('mal b')]);
+    const card = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${STATION_ID}`).get();
+    expect(card.data()?.recentFailures).toHaveLength(1);
+    const fulfilled = results.filter((r) => r.status === 'fulfilled');
+    expect(fulfilled.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('reintento con el mismo clientRequestId devuelve el mismo resultado sin registrar un fallo nuevo', async () => {
+    await seedHunt();
+    const clientRequestId = randomUUID();
+    const first = await submit('mal', clientRequestId);
+    const second = await submit('mal', clientRequestId);
+    expect({ ...second, serverNow: undefined }).toEqual({ ...first, serverNow: undefined });
+
+    const card = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${STATION_ID}`).get();
+    expect(card.data()?.recentFailures).toHaveLength(1);
+  });
+
+  it('toda llamada devuelve serverNow', async () => {
+    await seedHunt();
+    const result = await submit('la torre');
+    expect(result.serverNow).toBeTypeOf('string');
+    expect(Number.isNaN(Date.parse(result.serverNow))).toBe(false);
+  });
+});
