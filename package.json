@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:rules": "firebase emulators:exec --only firestore \"vitest run --config tests/rules/vitest.config.ts\"",
+    "test:functions": "firebase emulators:exec --only firestore \"npm --prefix functions test\"",
     "prepare": "husky"
   },
   "dependencies": {
