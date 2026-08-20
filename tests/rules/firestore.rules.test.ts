@@ -70,17 +70,17 @@ beforeEach(async () => {
 const playerDb = () => testEnv.authenticatedContext(PLAYER_UID).firestore();
 
 describe('hunts/{huntId}/stations', () => {
-  it('el jugador autenticado no puede hacer get de una estación', async () => {
+  it('an authenticated player cannot get a station', async () => {
     await assertFails(getDoc(doc(playerDb(), `hunts/${HUNT_ID}/stations/${STATION_ID}`)));
   });
 
-  it('el jugador autenticado no puede hacer list de las estaciones', async () => {
+  it('an authenticated player cannot list the stations', async () => {
     await assertFails(getDocs(collection(playerDb(), `hunts/${HUNT_ID}/stations`)));
   });
 });
 
 describe('hunts/{huntId}', () => {
-  it('el documento de la ruta no expone ningún campo con la lista de IDs de estación', async () => {
+  it('the hunt document exposes no field with the list of station IDs', async () => {
     const snapshot = await assertSucceeds(getDoc(doc(playerDb(), `hunts/${HUNT_ID}`)));
     const data = snapshot.data();
     expect(data).toBeDefined();
@@ -90,17 +90,17 @@ describe('hunts/{huntId}', () => {
 });
 
 describe('qrTokens/{token}', () => {
-  it('nadie puede leer un qrToken, ni siquiera un jugador autenticado', async () => {
+  it('no one can read a qrToken, not even an authenticated player', async () => {
     await assertFails(getDoc(doc(playerDb(), 'qrTokens/qr-1')));
   });
 });
 
 describe('progress/{progressId}', () => {
-  it('el jugador no puede leer el progreso de otro jugador', async () => {
+  it("a player cannot read another player's progress", async () => {
     await assertFails(getDoc(doc(playerDb(), `progress/${OTHER_UID}_${HUNT_ID}`)));
   });
 
-  it('el jugador no puede escribir su propio completionPct ni recentFailures', async () => {
+  it('a player cannot write their own completionPct or recentFailures', async () => {
     await assertFails(
       updateDoc(doc(playerDb(), `progress/${PLAYER_UID}_${HUNT_ID}`), { completionPct: 100 }),
     );
@@ -111,13 +111,13 @@ describe('progress/{progressId}', () => {
     );
   });
 
-  it('el jugador sí puede leer sus propias cards', async () => {
+  it('a player can read their own cards', async () => {
     await assertSucceeds(
       getDoc(doc(playerDb(), `progress/${PLAYER_UID}_${HUNT_ID}/cards/${STATION_ID}`)),
     );
   });
 
-  it('una card en estado unlocked no contiene ningún campo con la respuesta', async () => {
+  it('a card in the unlocked state contains no field with the answer', async () => {
     const snapshot = await assertSucceeds(
       getDoc(doc(playerDb(), `progress/${PLAYER_UID}_${HUNT_ID}/cards/${STATION_ID}`)),
     );

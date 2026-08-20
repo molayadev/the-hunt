@@ -8,7 +8,7 @@ service cloud.firestore {
     match /hunts/{huntId} {
       allow read: if resource.data.status == 'live';
       allow write: if false;
-      match /stations/{document=**} { allow read, write: if false; } // ← clave
+      match /stations/{document=**} { allow read, write: if false; }
     }
 
     match /qrTokens/{token} { allow read, write: if false; }
@@ -25,8 +25,7 @@ service cloud.firestore {
       match /pushTokens/{token} { allow read, write: if request.auth.uid == uid; }
     }
 
-    // /redemptions/{redemptionId}: sin regla explícita → denegado por
-    // defecto (Firestore deniega todo lo que no se concede expresamente).
-    // Solo las Cloud Functions (Admin SDK) lo leen y escriben.
+    // /redemptions/{redemptionId} has no explicit rule: Firestore denies by
+    // default. Only Cloud Functions (Admin SDK) read and write it.
   }
 }
