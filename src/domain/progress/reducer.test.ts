@@ -5,15 +5,15 @@ const stations12 = Array.from({ length: 12 }, (_, i) => `s${String(i + 1)}`);
 const now = Date.parse('2026-08-20T12:00:00.000Z');
 
 describe('completionPct', () => {
-  it('progreso vacío → 0%', () => {
+  it('empty progress is 0%', () => {
     expect(completionPct(emptyProgress, 12)).toBe(0);
   });
 
-  it('una ruta sin estaciones no divide por cero', () => {
+  it('a hunt with no stations does not divide by zero', () => {
     expect(completionPct(emptyProgress, 0)).toBe(0);
   });
 
-  it('resolver solo la estación final de 12 → 8%, no 100%', () => {
+  it('solving only the final station of 12 is 8%, not 100%', () => {
     const state = applySolve(
       emptyProgress,
       { type: 'solve', stationId: 's12' },
@@ -25,7 +25,7 @@ describe('completionPct', () => {
     expect(isComplete(state, 12)).toBe(false);
   });
 
-  it('11 de 12 → 91%, nunca 100', () => {
+  it('11 of 12 is 91%, never rounded up to 100', () => {
     let state = emptyProgress;
     for (const id of stations12.slice(0, 11)) {
       state = applySolve(state, { type: 'solve', stationId: id }, stations12, 12, now);
@@ -34,7 +34,7 @@ describe('completionPct', () => {
     expect(isComplete(state, 12)).toBe(false);
   });
 
-  it('12 de 12 → 100% y completedAt presente', () => {
+  it('12 of 12 is 100% and sets completedAt', () => {
     let state = emptyProgress;
     for (const id of stations12) {
       state = applySolve(state, { type: 'solve', stationId: id }, stations12, 12, now);
@@ -45,8 +45,8 @@ describe('completionPct', () => {
   });
 });
 
-describe('vecinas reveladas', () => {
-  it('resolver la estación 5 revela las pistas de la 4 y la 6', () => {
+describe('neighbouring stations revealed', () => {
+  it('solving station 5 reveals the clues for station 4 and station 6', () => {
     const state = applySolve(
       emptyProgress,
       { type: 'solve', stationId: 's5' },
@@ -58,7 +58,7 @@ describe('vecinas reveladas', () => {
     expect(state.revealedStationIds).toHaveLength(2);
   });
 
-  it('resolver una estación fuera de la lista ordenada no revela nada', () => {
+  it('solving a station outside the ordered list reveals nothing', () => {
     const state = applySolve(
       emptyProgress,
       { type: 'solve', stationId: 'ghost' },
@@ -69,7 +69,7 @@ describe('vecinas reveladas', () => {
     expect(state.revealedStationIds).toEqual([]);
   });
 
-  it('resolver la primera estación revela solo la 2 (no hay anterior)', () => {
+  it('solving the first station reveals only station 2 (no previous station)', () => {
     const state = applySolve(
       emptyProgress,
       { type: 'solve', stationId: 's1' },
@@ -80,7 +80,7 @@ describe('vecinas reveladas', () => {
     expect(state.revealedStationIds).toEqual(['s2']);
   });
 
-  it('resolver en orden 7 → 3 → 11 acumula las seis pistas vecinas sin duplicados', () => {
+  it('solving in order 7, 3, 11 accumulates the six neighbouring clues without duplicates', () => {
     let state = emptyProgress;
     for (const id of ['s7', 's3', 's11']) {
       state = applySolve(state, { type: 'solve', stationId: id }, stations12, 12, now);
@@ -92,8 +92,8 @@ describe('vecinas reveladas', () => {
   });
 });
 
-describe('idempotencia', () => {
-  it('aplicar el mismo evento solve dos veces deja el estado idéntico', () => {
+describe('idempotency', () => {
+  it('applying the same solve event twice leaves the state identical', () => {
     const once = applySolve(emptyProgress, { type: 'solve', stationId: 's5' }, stations12, 12, now);
     const twice = applySolve(once, { type: 'solve', stationId: 's5' }, stations12, 12, now + 1000);
     expect(twice).toEqual(once);

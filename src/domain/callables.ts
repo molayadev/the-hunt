@@ -1,7 +1,5 @@
-// Contratos compartidos entre el cliente (vía shared/lib/callables.ts) y las
-// Cloud Functions (vía el symlink functions/src/domain). Ver PLAN.md §8.3.
-// BREAKING CHANGE en este fichero implica romper la app de creación de rutas.
-
+// Shared contract between the player client and Cloud Functions (linked into
+// functions/src/domain). A breaking change here breaks the route-builder app.
 export interface Envelope {
   readonly serverNow: string;
 }

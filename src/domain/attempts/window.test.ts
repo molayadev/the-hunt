@@ -8,55 +8,55 @@ const MIN = 60 * 1000;
 const now = Date.parse('2026-08-20T12:00:00.000Z');
 
 describe('attemptsLeft', () => {
-  it('sin fallos devuelve el máximo de intentos', () => {
+  it('with no failures returns the maximum attempts', () => {
     expect(attemptsLeft([], now, policy)).toBe(3);
   });
 
-  it('tres fallos hace 1 minuto agotan los intentos', () => {
+  it('three failures a minute ago exhaust the attempts', () => {
     const failures = [now - MIN, now - MIN, now - MIN];
     expect(attemptsLeft(failures, now, policy)).toBe(0);
   });
 
-  it('caducan de uno en uno, no en bloque', () => {
+  it('failures expire one at a time, not all at once', () => {
     const failures = [now - (24 * HOUR + MIN), now - HOUR, now - MIN];
     expect(attemptsLeft(failures, now, policy)).toBe(1);
   });
 
-  it('un fallo justo en el borde exacto de la ventana ya no cuenta', () => {
+  it('a failure right at the window boundary no longer counts', () => {
     const failures = [now - policy.windowMs];
     expect(attemptsLeft(failures, now, policy)).toBe(3);
   });
 
-  it('nunca devuelve negativo aunque haya más fallos que el máximo', () => {
+  it('never returns negative even with more failures than the maximum', () => {
     const failures = Array.from({ length: 10 }, (_, i) => now - i * MIN);
     expect(attemptsLeft(failures, now, policy)).toBe(0);
   });
 
-  it('un fallo con timestamp futuro no aumenta los intentos disponibles', () => {
+  it('a failure with a future timestamp does not increase available attempts', () => {
     const failures = [now + HOUR, now + HOUR, now + HOUR];
     expect(attemptsLeft(failures, now, policy)).toBe(0);
   });
 });
 
 describe('retryAt', () => {
-  it('devuelve null si hay intentos disponibles', () => {
+  it('returns null when attempts are available', () => {
     expect(retryAt([], now, policy)).toBeNull();
   });
 
-  it('sin intentos, devuelve el fallo más antiguo dentro de la ventana más 24h', () => {
+  it('with no attempts left, returns the oldest failure in the window plus 24h', () => {
     const oldest = now - 10 * HOUR;
     const failures = [oldest, now - 5 * HOUR, now - MIN];
     expect(retryAt(failures, now, policy)).toBe(oldest + policy.windowMs);
   });
 
-  it('con una política de 0 intentos y sin fallos registrados, no hay nada que esperar', () => {
+  it('with a zero-attempt policy and no recorded failures, there is nothing to wait for', () => {
     const zeroAttempts: AttemptPolicy = { maxAttempts: 0, windowMs: policy.windowMs };
     expect(retryAt([], now, zeroAttempts)).toBeNull();
   });
 });
 
 describe('trimFailures', () => {
-  it('conserva los N más recientes y descarta el resto', () => {
+  it('keeps the N most recent and discards the rest', () => {
     const failures = [now - 4 * HOUR, now - 3 * HOUR, now - 2 * HOUR, now - HOUR];
     const trimmed = trimFailures(failures, policy);
     expect(trimmed).toHaveLength(3);

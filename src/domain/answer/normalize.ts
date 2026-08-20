@@ -1,11 +1,12 @@
+const stripCombiningDiacritics = (value: string): string =>
+  value.normalize('NFD').replace(/\p{Mn}/gu, '');
+
+const stripPunctuation = (value: string): string => value.replace(/[^\p{L}\p{N}\s]/gu, '');
+
+const collapseWhitespace = (value: string): string => value.replace(/\s+/g, ' ');
+
 export function normalizeAnswer(raw: string): string {
-  return raw
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Mn}/gu, '') // quita tildes: "café" → "cafe" (marcas diacríticas combinantes)
-    .replace(/[^\p{L}\p{N}\s]/gu, '') // quita puntuación: "¡Sí!" → "si"
-    .replace(/\s+/g, ' '); // colapsa espacios
+  return collapseWhitespace(stripPunctuation(stripCombiningDiacritics(raw.trim().toLowerCase())));
 }
 
 export function isCorrectAnswer(raw: string, acceptedAnswers: readonly string[]): boolean {

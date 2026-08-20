@@ -19,17 +19,12 @@ export interface SolveEvent {
 
 const uniq = (ids: readonly string[]): string[] => [...new Set(ids)];
 
-// `clue` es la pista que lleva *a* esa estación (PLAN.md §3.1): revelar las
-// vecinas de N es simplemente exponer los IDs de N-1 y N+1, si existen.
-function neighboursOf(stationId: string, orderedStationIds: readonly string[]): string[] {
-  const idx = orderedStationIds.indexOf(stationId);
-  if (idx === -1) return [];
-  const neighbours: string[] = [];
-  const prev = orderedStationIds[idx - 1];
-  const next = orderedStationIds[idx + 1];
-  if (prev !== undefined) neighbours.push(prev);
-  if (next !== undefined) neighbours.push(next);
-  return neighbours;
+function neighbouringStationIds(stationId: string, orderedStationIds: readonly string[]): string[] {
+  const index = orderedStationIds.indexOf(stationId);
+  if (index === -1) return [];
+  const previousStationId = orderedStationIds[index - 1];
+  const nextStationId = orderedStationIds[index + 1];
+  return [previousStationId, nextStationId].filter((id) => id !== undefined);
 }
 
 export function applySolve(
@@ -42,7 +37,7 @@ export function applySolve(
   const solvedStationIds = uniq([...state.solvedStationIds, event.stationId]);
   const revealedStationIds = uniq([
     ...state.revealedStationIds,
-    ...neighboursOf(event.stationId, orderedStationIds),
+    ...neighbouringStationIds(event.stationId, orderedStationIds),
   ]);
   const completedAt = state.completedAt ?? (solvedStationIds.length === totalCount ? now : null);
 
@@ -51,7 +46,6 @@ export function applySolve(
 
 export function completionPct(state: ProgressState, totalCount: number): number {
   if (totalCount === 0) return 0;
-  // Nunca se redondea hacia arriba: 11/12 debe mostrar 91 %, jamás 100 %.
   return Math.floor((state.solvedStationIds.length / totalCount) * 100);
 }
 

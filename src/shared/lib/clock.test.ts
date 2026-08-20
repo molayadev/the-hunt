@@ -7,7 +7,7 @@ describe('syncClock / now', () => {
     vi.useRealTimers();
   });
 
-  it('sin sincronizar, now() sigue el reloj local', () => {
+  it('without syncing, now() follows the local clock', () => {
     const local = Date.parse('2026-08-20T12:00:00.000Z');
     vi.useFakeTimers();
     vi.setSystemTime(local);
@@ -15,18 +15,18 @@ describe('syncClock / now', () => {
     expect(now()).toBe(local);
   });
 
-  it('corrige el reloj local hacia el reloj del servidor', () => {
+  it('corrects the local clock toward the server clock', () => {
     const local = Date.parse('2026-08-20T12:00:00.000Z');
-    const server = Date.parse('2026-08-20T12:05:00.000Z'); // servidor 5 min por delante
+    const serverFiveMinutesAhead = Date.parse('2026-08-20T12:05:00.000Z');
     vi.useFakeTimers();
     vi.setSystemTime(local);
-    syncClock(new Date(server).toISOString());
-    expect(now()).toBe(server);
+    syncClock(new Date(serverFiveMinutesAhead).toISOString());
+    expect(now()).toBe(serverFiveMinutesAhead);
   });
 
-  it('el offset se mantiene al avanzar el tiempo local', () => {
+  it('keeps the offset as local time advances', () => {
     const local = Date.parse('2026-08-20T12:00:00.000Z');
-    const server = Date.parse('2026-08-20T11:58:00.000Z'); // servidor 2 min por detrás
+    const server = Date.parse('2026-08-20T11:58:00.000Z');
     vi.useFakeTimers();
     vi.setSystemTime(local);
     syncClock(new Date(server).toISOString());
