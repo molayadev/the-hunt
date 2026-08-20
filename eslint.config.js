@@ -77,6 +77,7 @@ export default ts.config(
   },
   {
     files: ['src/domain/**'],
+    ignores: ['**/*.test.{ts,tsx}'],
     rules: {
       'no-restricted-globals': [
         'error',
