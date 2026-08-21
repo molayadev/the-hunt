@@ -3,8 +3,10 @@
 > App de búsqueda del tesoro por QR. Ruta no lineal, progreso persistente, premios digitales y físicos.
 > Cliente jugador (esta app) + panel de creación de rutas (app hermana, misma DB).
 
-**Versión:** 0.4 · **Estado:** Fases 0-5 del roadmap completadas — app funcionalmente completa de extremo a extremo, verificada contra el emulador
+**Versión:** 0.5 · **Estado:** Fases 0-5 completadas, todas las preguntas de producto (§13) resueltas por el organizador — pantalla de portada multi-hunt con perfil local en curso
 
+> **Cambios en 0.5** — Se resuelven las 9 preguntas abiertas de §13 con el organizador. Perfil local (nombre guardado en `localStorage`, sin cuenta) y portada multi-hunt (lista de rutas con progreso) reemplazan la pantalla `/` de "en construcción". `PrizeWallet` renderiza enlaces (mapa o recompensa digital) en vez de solo texto. `HuntDoc`/`HuntSummary` ganan `language`. Fase 6 (roadmap) recoge lo aceptado pero no implementado: sincronización manual, i18n de la interfaz, vincular cuenta y el paquete `@rastro/schema`.
+>
 > **Cambios en 0.4** — Fases 3, 4 y 5 completadas: cliente entero (unirse, estación, intentos, constelación, premios), campo (escaneo QR, cola offline, notificaciones), y cierre (e2e, code-splitting confirmado, contrato de datos documentado). El e2e destapó dos bugs reales — `<Outlet />` ausente y App Check bloqueando el emulador — ambos arreglados. Ver §12 para el detalle fase a fase.
 >
 > **Cambios en 0.3** — Se documenta el progreso real de implementación: Fases 0-2 del roadmap (§12) completadas, incluido el cierre de Fase 2 con App Check forzado en las dos callables. Se añade nota sobre el symlink `functions/src/domain` en Windows (§6.1). Se resuelve la pregunta abierta de acumulación de intentos (§13.1).
@@ -870,14 +872,41 @@ El e2e destapó dos bugs reales que ningún test unitario podía ver: `h.$huntId
 
 ---
 
-## 13. Preguntas abiertas
+## 13. Preguntas abiertas — todas resueltas (v0.5)
 
-1. ~~**Acumulación.**~~ **Resuelta (v0.3): descartada.** La ventana deslizante (§5.1) la elimina por diseño: el máximo instantáneo es siempre `maxAttempts`, sin ahorro de intentos no usados. Implementado y testeado (`attemptsLeft`, `retryAt`, `trimFailures` en `src/domain/attempts/window.ts`). Revertir esto implicaría volver a un contador con recarga por calendario y recuperar la lógica de zona horaria que la v0.2 eliminó a propósito — no se recomienda salvo petición explícita.
-2. **Alcance de los intentos: `station` o `hunt`.** Con `scope: 'station'` (mi recomendación, y el valor por defecto del plan), fallar tres veces en la estación 5 no impide seguir intentando la 8 — el jugador nunca se queda sin nada que hacer, que en una fiesta de un día importa mucho. Con `scope: 'hunt'` el bloqueo es total y el juego se detiene. Para el cumpleaños: `station`. Para la campaña del libro, quizá `hunt`.
-3. **Duración de la ventana.** 24 h es correcto para una campaña de marketing de semanas. Para un cumpleaños de una tarde es letal: tres fallos y el invitado queda fuera del juego el resto de la fiesta. `windowHours` es configurable por ruta; para el evento de un día pondría 1 h, o `maxAttempts` alto.
-4. **Premios físicos.** ¿Se canjean mostrando un código al organizador, o basta con que la app diga "te lo doy yo"? Cambia si `redemptions` necesita flujo de validación.
-5. **Registro.** Propongo **auth anónima** por defecto: en una fiesta nadie quiere crear una cuenta. El riesgo es perder el progreso al borrar datos del navegador. Mitigación: instalar la PWA + ofrecer vincular email al llegar al 50 %.
-6. **Pistas por redes sociales.** ¿Son los mismos `qrTokens` publicados como texto, o un canal aparte con reglas propias (p. ej. límite de canjes)? El campo `channel` ya lo contempla, falta decidir la política.
-7. **Rutas simultáneas.** ¿Un jugador puede tener varias rutas abiertas? El modelo lo soporta; la UI de portada cambia bastante según la respuesta.
-8. **Contrato con la app de creación.** Al compartir DB, el esquema es una API pública entre dos apps. Propongo extraer los tipos y validadores Zod a un paquete `@rastro/schema` versionado, consumido por ambas. Si no, la primera migración rompe algo en silencio.
-9. **Idioma.** ¿Solo español, o se prevé i18n para el uso en marketing del libro? Meterlo después cuesta 10× más.
+1. ~~**Acumulación.**~~ **Resuelta (v0.3): descartada.** La ventana deslizante (§5.1) la elimina por diseño: el máximo instantáneo es siempre `maxAttempts`, sin ahorro de intentos no usados. Implementado y testeado (`attemptsLeft`, `retryAt`, `trimFailures` en `src/domain/attempts/window.ts`).
+
+   **Añadido (v0.5):** `maxAttempts`/`windowHours` son propiedades de `hunts/{huntId}.attemptPolicy`, así que la app de creación de rutas los fija por ruta — esta app (el cliente jugador) solo los lee. No hay ningún sitio en _este_ repo donde "se configuren"; eso vive en la futura app de creación. Lo que sí hace falta aquí es que, si el organizador cambia `attemptPolicy` mientras el jugador está offline, el cliente lo recoja al reconectar. Hoy `useHunt` ya usa `onSnapshot` (§ features/hunt/useHunt.ts), así que un cambio se propaga solo **mientras haya conexión** — no hace falta botón. El botón de "sincronizar" sí es necesario para el modelo local-first del punto 5: cuando el progreso vive primero en local, hace falta un gesto explícito para tirar de Firestore y refrescar `hunts`/`stations`/`attemptPolicy`. **Pendiente de implementar**, ver roadmap Fase 6.
+
+2. ~~**Alcance de los intentos.**~~ **Resuelta:** `scope: 'station'` por defecto (ya es el comportamiento de `functions/src/callable/submitAnswer.ts`). Fijado por ruta en la creación, no configurable desde el cliente.
+
+3. ~~**Duración de la ventana.**~~ **Resuelta:** por defecto `maxAttempts: 3`, `windowHours: 24` — configurable por ruta desde la app de creación, no desde este cliente.
+
+4. ~~**Premios físicos.**~~ **Resuelta: sin flujo de validación.** El premio físico se encuentra en el sitio real de la estación (no hay canje con el organizador). La resolución puede incluir:
+   - un enlace de Google Maps a dónde está el regalo, o
+   - un enlace a la recompensa digital (libro, entradas, documento) cuando el premio no es físico.
+
+   **Implementado (v0.5):** `PrizeWallet` ahora detecta si `prize.payload` o `prize.redeemInstructions` es una URL y la renderiza como enlace clicable (`Ver ubicación` / `Abrir`), en vez de solo texto plano.
+
+5. ~~**Registro.**~~ **Resuelta: auth anónima + perfil local.** La app pide un nombre en la primera visita y lo guarda en `localStorage` (no Firebase Auth todavía) — es un perfil puramente local, desacoplado del `uid` anónimo que ya gestiona el back para validar. **Implementado (v0.5):** pantalla `/` (`features/profile/`) pide el nombre si no existe perfil local. Vincular email más adelante queda en el roadmap (Fase 6), no es prioritario ahora.
+
+6. ~~**Pistas por redes sociales.**~~ **Resuelta: sin cambios en la app.** A corto plazo las pistas en redes son manuales (una respuesta repartida en varias publicaciones, un patrón oculto, etc.) y no tocan ningún flujo de esta app. El campo `channel` en `qrTokens` ya cubre el caso en que sí se publique un QR/token real. Sin trabajo pendiente aquí.
+
+7. ~~**Rutas simultáneas.**~~ **Resuelta: sí, un jugador puede tener varias rutas.** **Implementado (v0.5):** la portada (`/`) lista los hunts en los que el jugador tiene progreso (consulta `progress` por `uid`), cada uno como una tarjeta con título y `N de M · X%`; si no tiene ninguno, muestra un mensaje invitando a unirse. Al entrar en un hunt se ve `ProgressConstellation` (el "mapa") con las estaciones ya identificadas — resueltas marcadas visualmente (hoy un check ✓; una corona u otro icono más temático queda como pulido visual pendiente, no bloqueante). Desde cualquier hunt se puede volver a la portada.
+
+8. ~~**Contrato con la app de creación.**~~ **Resuelta: sí, extraer `@rastro/schema`.** Aceptado, pero no implementado todavía: no existe aún una segunda app que lo consuma, así que crear el paquete ahora sería especular sobre una API sin un segundo cliente real. Queda en el roadmap (Fase 6) para cuando arranque la app de creación de rutas. Mientras tanto, el contrato sigue documentado en el README apuntando a `functions/src/lib/schema.ts` y `src/domain/callables.ts`.
+
+9. ~~**Idioma.**~~ **Resuelta: multi-idioma por hunt, no por sesión.** Un hunt se crea en un idioma fijo (español o inglés); no hay traducción de preguntas/respuestas dentro de un mismo hunt. Para tener el mismo tesoro en los dos idiomas, la app de creación crea dos hunts distintos. **Añadido (v0.5):** `HuntDoc`/`HuntSummary` ganan el campo `language: 'es' | 'en'`, para que el cliente pueda más adelante cambiar el idioma de la interfaz (botones, mensajes) al idioma del hunt activo. El cambio de idioma de la UI en sí (i18n del texto de Rastro, no del contenido del hunt) **no está implementado todavía** — es Fase 6.
+
+---
+
+### Roadmap Fase 6 — decisiones de producto (v0.5)
+
+Trabajo confirmado por el organizador pero no implementado esta sesión, en orden de valor:
+
+```
+feat(hunt): Add a sync action to refresh hunt/station settings after reconnecting
+feat(i18n): Localize the app chrome to the active hunt's language field
+feat(auth): Add account linking (anonymous → email) at 50% completion
+feat(config): Extract shared types/validators into a @rastro/schema package, once a second consumer exists
+```
