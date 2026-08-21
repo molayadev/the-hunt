@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useSession } from '../../features/auth/session';
 import { StationCard } from '../../features/hunt/StationCard';
 import { ProgressConstellation } from '../../features/progress/ProgressConstellation';
@@ -12,6 +12,7 @@ export const Route = createFileRoute('/h/$huntId')({
 function HuntScreen() {
   const { huntId } = Route.useParams();
   const { uid } = useSession();
+  const navigate = useNavigate();
   const { summary, cards, isLoading } = useHuntProgress(uid, huntId);
 
   if (isLoading) {
@@ -47,7 +48,16 @@ function HuntScreen() {
         {[...cards]
           .sort((a, b) => a.order - b.order)
           .map((card) => (
-            <StationCard key={card.id} card={card} />
+            <StationCard
+              key={card.id}
+              card={card}
+              onSolve={() => {
+                void navigate({
+                  to: '/h/$huntId/s/$stationId',
+                  params: { huntId, stationId: card.id },
+                });
+              }}
+            />
           ))}
       </div>
     </main>

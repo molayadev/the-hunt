@@ -15,6 +15,7 @@ import { Route as JoinRouteImport } from './routes/join'
 import { Route as ScanRouteImport } from './routes/scan'
 import { Route as HHuntIdRouteImport } from './routes/h.$huntId'
 import { Route as HHuntIdPrizesRouteImport } from './routes/h.$huntId.prizes'
+import { Route as HHuntIdSStationIdRouteImport } from './routes/h.$huntId.s.$stationId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const HHuntIdPrizesRoute = HHuntIdPrizesRouteImport.update({
   path: '/prizes',
   getParentRoute: () => HHuntIdRoute,
 } as any)
+const HHuntIdSStationIdRoute = HHuntIdSStationIdRouteImport.update({
+  id: '/s/$stationId',
+  path: '/s/$stationId',
+  getParentRoute: () => HHuntIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/scan': typeof ScanRoute
   '/h/$huntId': typeof HHuntIdRouteWithChildren
   '/h/$huntId/prizes': typeof HHuntIdPrizesRoute
+  '/h/$huntId/s/$stationId': typeof HHuntIdSStationIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/scan': typeof ScanRoute
   '/h/$huntId': typeof HHuntIdRouteWithChildren
   '/h/$huntId/prizes': typeof HHuntIdPrizesRoute
+  '/h/$huntId/s/$stationId': typeof HHuntIdSStationIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,13 +79,27 @@ export interface FileRoutesById {
   '/scan': typeof ScanRoute
   '/h/$huntId': typeof HHuntIdRouteWithChildren
   '/h/$huntId/prizes': typeof HHuntIdPrizesRoute
+  '/h/$huntId/s/$stationId': typeof HHuntIdSStationIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/account' | '/join' | '/scan' | '/h/$huntId' | '/h/$huntId/prizes'
+    | '/'
+    | '/account'
+    | '/join'
+    | '/scan'
+    | '/h/$huntId'
+    | '/h/$huntId/prizes'
+    | '/h/$huntId/s/$stationId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/join' | '/scan' | '/h/$huntId' | '/h/$huntId/prizes'
+  to:
+    | '/'
+    | '/account'
+    | '/join'
+    | '/scan'
+    | '/h/$huntId'
+    | '/h/$huntId/prizes'
+    | '/h/$huntId/s/$stationId'
   id:
     | '__root__'
     | '/'
@@ -86,6 +108,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/h/$huntId'
     | '/h/$huntId/prizes'
+    | '/h/$huntId/s/$stationId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -140,15 +163,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HHuntIdPrizesRouteImport
       parentRoute: typeof HHuntIdRoute
     }
+    '/h/$huntId/s/$stationId': {
+      id: '/h/$huntId/s/$stationId'
+      path: '/s/$stationId'
+      fullPath: '/h/$huntId/s/$stationId'
+      preLoaderRoute: typeof HHuntIdSStationIdRouteImport
+      parentRoute: typeof HHuntIdRoute
+    }
   }
 }
 
 interface HHuntIdRouteChildren {
   HHuntIdPrizesRoute: typeof HHuntIdPrizesRoute
+  HHuntIdSStationIdRoute: typeof HHuntIdSStationIdRoute
 }
 
 const HHuntIdRouteChildren: HHuntIdRouteChildren = {
   HHuntIdPrizesRoute: HHuntIdPrizesRoute,
+  HHuntIdSStationIdRoute: HHuntIdSStationIdRoute,
 }
 
 const HHuntIdRouteWithChildren =
