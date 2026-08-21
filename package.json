@@ -18,6 +18,7 @@
     "test:rules": "firebase emulators:exec --only firestore \"vitest run --config tests/rules/vitest.config.ts\"",
     "test:functions": "firebase emulators:exec --only firestore \"npm --prefix functions test\"",
     "test:e2e": "playwright test",
+    "seed:demo": "node scripts/seed-demo-hunts.mjs",
     "prepare": "husky"
   },
   "dependencies": {
