@@ -73,14 +73,24 @@ export interface ProgressDoc {
   readonly completedAt?: number;
 }
 
-export type CardStateDoc = 'unlocked' | 'solved';
+export type CardStateDoc = 'revealed' | 'unlocked' | 'solved';
 
-export interface CardDoc {
+interface CardBaseDoc {
   readonly order: number;
   readonly title: string;
   readonly clue: string;
-  readonly challenge: ChallengeDoc;
-  readonly state: CardStateDoc;
-  readonly recentFailures: readonly number[]; // bounded to maxAttempts entries
-  readonly prize?: PrizeDoc;
 }
+
+export type CardDoc =
+  | (CardBaseDoc & { readonly state: 'revealed' })
+  | (CardBaseDoc & {
+      readonly state: 'unlocked';
+      readonly challenge: ChallengeDoc;
+      readonly recentFailures: readonly number[]; // bounded to maxAttempts entries
+    })
+  | (CardBaseDoc & {
+      readonly state: 'solved';
+      readonly challenge: ChallengeDoc;
+      readonly recentFailures: readonly number[];
+      readonly prize: PrizeDoc;
+    });

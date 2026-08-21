@@ -84,6 +84,44 @@ describe('submitAnswerHandler', () => {
     );
   });
 
+  it('a correct answer writes revealed cards for newly revealed neighbours, with clue but no challenge', async () => {
+    await seedHunt();
+    await submit('la torre');
+
+    const nextCard = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${NEXT_STATION_ID}`).get();
+    expect(nextCard.data()).toEqual({
+      order: 6,
+      title: 'Estación 6',
+      clue: 'Pista de la estación 6',
+      state: 'revealed',
+    });
+
+    const prevCard = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${PREV_STATION_ID}`).get();
+    expect(prevCard.data()).toEqual({
+      order: 4,
+      title: 'Estación 4',
+      clue: 'Pista de la estación 4',
+      state: 'revealed',
+    });
+  });
+
+  it('does not downgrade an already unlocked neighbour card back to revealed', async () => {
+    await seedHunt();
+    await db.doc(`progress/${UID}_${HUNT_ID}/cards/${NEXT_STATION_ID}`).set({
+      order: 6,
+      title: 'Estación 6',
+      clue: 'Pista de la estación 6',
+      challenge: { type: 'text', question: '¿Qué edificio es?' },
+      state: 'unlocked',
+      recentFailures: [],
+    });
+
+    await submit('la torre');
+
+    const nextCard = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${NEXT_STATION_ID}`).get();
+    expect(nextCard.data()?.state).toBe('unlocked');
+  });
+
   it('a correct answer with different capitalization and accents is valid', async () => {
     await seedHunt();
     const result = await submit('¡LA TÓRRE!');
