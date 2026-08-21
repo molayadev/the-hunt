@@ -51,6 +51,7 @@ function StationScreen() {
             remainingMs={solver.attemptStatus.remainingMs}
           />
           <AnswerForm
+            challenge={card.challenge}
             disabled={solver.attemptStatus.attemptsLeft === 0 || solver.isPending}
             errorMessage={solver.errorMessage}
             onSubmit={solver.submit}

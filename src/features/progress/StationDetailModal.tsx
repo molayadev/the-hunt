@@ -82,6 +82,7 @@ export function StationDetailModal({ card, huntId, hunt, onClose }: StationDetai
               maxAttempts={solver.policy.maxAttempts}
             />
             <AnswerForm
+              challenge={card.challenge}
               disabled={solver.attemptStatus.attemptsLeft === 0 || solver.isPending}
               errorMessage={solver.errorMessage}
               onSubmit={solver.submit}

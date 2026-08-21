@@ -1,4 +1,5 @@
 import type { AttemptPolicy } from '../../domain/attempts/window';
+import type { AnswerInput } from '../../domain/callables';
 import type { Card } from '../../shared/types/card';
 import type { HuntSummary } from '../../shared/types/hunt';
 import { useAttemptStatus } from './useAttemptStatus';
@@ -25,7 +26,7 @@ export interface StationSolver {
   readonly result: { readonly ok: boolean } | undefined;
   readonly errorMessage: string | null;
   readonly isPending: boolean;
-  readonly submit: (value: string) => void;
+  readonly submit: (answer: AnswerInput) => void;
 }
 
 export function useStationSolver(
@@ -50,11 +51,11 @@ export function useStationSolver(
     result,
     errorMessage: errorMessageFor(result?.ok, error),
     isPending,
-    submit: (value: string) => {
+    submit: (answer: AnswerInput) => {
       mutate({
         huntId,
         stationId,
-        answer: { kind: 'text', value },
+        answer,
         clientRequestId: crypto.randomUUID(),
       });
     },
