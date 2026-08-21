@@ -15,6 +15,10 @@ export interface HuntDoc {
   readonly stationCount: number;
   readonly attemptPolicy: AttemptPolicyDoc;
   readonly createdBy: string;
+  // A hunt is authored in a single fixed language; questions/answers are
+  // never translated within one hunt. Offering the same hunt in another
+  // language means the creation app makes a second hunt.
+  readonly language: 'es' | 'en';
 }
 
 export type ChallengeDoc =

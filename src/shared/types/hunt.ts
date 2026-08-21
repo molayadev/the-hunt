@@ -11,4 +11,5 @@ export interface HuntSummary {
     readonly windowHours: number;
     readonly scope: 'station' | 'hunt';
   };
+  readonly language: 'es' | 'en';
 }
