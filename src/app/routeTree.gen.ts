@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JoinRouteImport } from './routes/join'
+import { Route as HHuntIdRouteImport } from './routes/h.$huntId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const JoinRoute = JoinRouteImport.update({
   path: '/join',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HHuntIdRoute = HHuntIdRouteImport.update({
+  id: '/h/$huntId',
+  path: '/h/$huntId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/join': typeof JoinRoute
+  '/h/$huntId': typeof HHuntIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/join': typeof JoinRoute
+  '/h/$huntId': typeof HHuntIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/join': typeof JoinRoute
+  '/h/$huntId': typeof HHuntIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/join'
+  fullPaths: '/' | '/join' | '/h/$huntId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/join'
-  id: '__root__' | '/' | '/join'
+  to: '/' | '/join' | '/h/$huntId'
+  id: '__root__' | '/' | '/join' | '/h/$huntId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   JoinRoute: typeof JoinRoute
+  HHuntIdRoute: typeof HHuntIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JoinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/h/$huntId': {
+      id: '/h/$huntId'
+      path: '/h/$huntId'
+      fullPath: '/h/$huntId'
+      preLoaderRoute: typeof HHuntIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   JoinRoute: JoinRoute,
+  HHuntIdRoute: HHuntIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

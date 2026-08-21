@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { JoinForm } from '../../features/hunt/JoinForm';
 import { HuntNotFoundError, useJoinHuntByCode } from '../../features/hunt/useJoinHuntByCode';
 
@@ -15,24 +15,23 @@ function errorMessageFor(error: unknown): string | null {
 }
 
 function JoinScreen() {
-  const { mutate, data: hunt, error, isPending } = useJoinHuntByCode();
+  const navigate = useNavigate();
+  const { mutate, error, isPending } = useJoinHuntByCode();
 
   return (
     <main className="flex min-h-svh flex-col items-center justify-center gap-6 p-6 text-center">
       <h1 className="font-display text-3xl font-semibold text-primary">Unirse a una ruta</h1>
-      {hunt ? (
-        <p className="max-w-sm text-foreground">
-          {hunt.title} · {hunt.stationCount} estaciones
-        </p>
-      ) : (
-        <JoinForm
-          isPending={isPending}
-          errorMessage={errorMessageFor(error)}
-          onSubmit={(code) => {
-            mutate(code);
-          }}
-        />
-      )}
+      <JoinForm
+        isPending={isPending}
+        errorMessage={errorMessageFor(error)}
+        onSubmit={(code) => {
+          mutate(code, {
+            onSuccess: (hunt) => {
+              void navigate({ to: '/h/$huntId', params: { huntId: hunt.id } });
+            },
+          });
+        }}
+      />
     </main>
   );
 }

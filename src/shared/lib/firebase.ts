@@ -4,9 +4,11 @@ import { connectFunctionsEmulator, getFunctions, httpsCallable } from 'firebase/
 import {
   collection,
   connectFirestoreEmulator,
+  doc,
   getDocs,
   initializeFirestore,
   limit,
+  onSnapshot,
   persistentLocalCache,
   persistentMultipleTabManager,
   query,
@@ -14,7 +16,7 @@ import {
 } from 'firebase/firestore';
 
 export { onAuthStateChanged, signInAnonymously, httpsCallable };
-export { collection, getDocs, limit, query, where };
+export { collection, doc, getDocs, limit, onSnapshot, query, where };
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? 'demo-api-key',
