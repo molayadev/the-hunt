@@ -29,8 +29,7 @@ describe('useAttemptStatus', () => {
     expect(result.current.attemptsLeft).toBe(0);
 
     act(() => {
-      vi.setSystemTime(now + 1200);
-      vi.advanceTimersByTime(1200);
+      vi.advanceTimersByTime(1000);
     });
 
     expect(result.current.attemptsLeft).toBe(1);
