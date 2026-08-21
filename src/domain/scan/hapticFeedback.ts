@@ -5,5 +5,5 @@ export interface HapticEnvironment {
 
 export function vibrateOnDecode(env: HapticEnvironment): void {
   if (env.prefersReducedMotion) return;
-  env.vibrate(1);
+  env.vibrate(40);
 }
