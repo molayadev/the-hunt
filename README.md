@@ -23,12 +23,42 @@ El cliente (`src/shared/lib/firebase.ts`) se conecta automáticamente a los emul
 
 La UI de los emuladores queda en `http://127.0.0.1:4000`.
 
+### Datos de demo para probar en local
+
+Todavía no existe la app de creación de rutas, así que un emulador recién arrancado no tiene ningún hunt que unir ni jugar. Con los emuladores corriendo (`npm run emulators`), en otra terminal:
+
+```bash
+npm run seed:demo
+```
+
+Esto escribe dos rutas jugables directamente en el emulador de Firestore:
+
+| Ruta            | Código para unirse (`/join`) | Idioma | Estaciones                                               |
+| --------------- | ---------------------------- | ------ | -------------------------------------------------------- |
+| Ruta del Parque | `PARQUE2026`                 | es     | La Fuente · El Roble Viejo · El Quiosco · La Estatua (4) |
+| City Trail      | `CITYTRAIL`                  | en     | Old Clock Tower · Market Square · Riverside Bridge (3)   |
+
+Como todavía no hay códigos QR físicos que imprimir, cada estación tiene también un **token de prueba** que se puede escribir a mano en `/scan` (campo "Código de la estación", debajo del visor de cámara) para desbloquearla sin necesidad de escanear nada: `demo-parque-fuente`, `demo-parque-roble`, `demo-parque-quiosco`, `demo-parque-estatua`, `demo-city-clocktower`, `demo-city-market`, `demo-city-bridge`.
+
+Respuestas de las estaciones con reto de texto o de opción múltiple (las de tipo `qr_only` — El Quiosco y Riverside Bridge — se resuelven solo con el token, sin respuesta):
+
+| Estación        | Respuesta              |
+| --------------- | ---------------------- |
+| La Fuente       | `circular` o `redonda` |
+| El Roble Viejo  | opción "Verde"         |
+| La Estatua      | `un libro` o `libro`   |
+| Old Clock Tower | `four` o `4`           |
+| Market Square   | opción "Flowers"       |
+
+El script es idempotente (usa IDs fijos), así que se puede volver a ejecutar tras un `npm run test:functions` o `npm run test:rules` (que limpian el emulador) sin duplicar nada.
+
 ### Comandos útiles
 
 | Comando                           | Qué hace                                                                                 |
 | --------------------------------- | ---------------------------------------------------------------------------------------- |
 | `npm run dev`                     | Servidor de desarrollo Vite                                                              |
 | `npm run emulators`               | Firebase Auth + Firestore + Functions emulados                                           |
+| `npm run seed:demo`               | Escribe dos hunts de demo jugables en el emulador (ver arriba)                           |
 | `npm run build`                   | Build de producción (`tsc -b && vite build`)                                             |
 | `npm run lint` / `npm run format` | ESLint / Prettier                                                                        |
 | `npm run typecheck`               | `tsc -b --noEmit`                                                                        |
