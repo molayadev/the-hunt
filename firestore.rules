@@ -14,7 +14,14 @@ service cloud.firestore {
     match /qrTokens/{token} { allow read, write: if false; }
 
     match /progress/{progressId} {
-      allow read: if isOwner(progressId);
+      // The isOwner(progressId) branch covers get(); it can't be evaluated
+      // for a list() query, since the rules engine can't statically prove a
+      // field-filtered query only returns documents whose ID happens to
+      // match that field — hence the second branch, which mirrors the
+      // where('uid', '==', uid) filter the home screen's query actually
+      // uses (see src/features/hunt/useMyHunts.ts).
+      allow read: if isOwner(progressId) ||
+        (request.auth != null && resource.data.uid == request.auth.uid);
       allow write: if false;
       match /cards/{stationId}  { allow read: if isOwner(progressId); allow write: if false; }
       match /events/{eventId}   { allow read: if isOwner(progressId); allow write: if false; }
