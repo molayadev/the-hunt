@@ -108,4 +108,8 @@ export default ts.config(
     languageOptions: { globals: { ...globals.node } },
     rules: { 'no-restricted-imports': 'off' },
   },
+  {
+    files: ['src/sw.ts'],
+    rules: { 'no-restricted-imports': 'off' },
+  },
 );
