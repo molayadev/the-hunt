@@ -12,10 +12,11 @@ beforeEach(async () => {
   await clearFirestoreEmulator();
 });
 
-async function seedLiveHuntWithToken(token: string) {
+async function seedLiveHuntWithToken(token: string, visibility: 'public' | 'code' = 'public') {
   await db.doc(`hunts/${HUNT_ID}`).set({
     title: 'Cumpleaños de prueba',
     status: 'live',
+    visibility,
     stationCount: 12,
     attemptPolicy: { maxAttempts: 3, windowHours: 24, scope: 'station' },
   });
@@ -87,5 +88,48 @@ describe('redeemQrHandler', () => {
     const result = await redeemQrHandler({ token: 'qr-1', clientRequestId: randomUUID() }, UID);
     expect(result.serverNow).toBeTypeOf('string');
     expect(Number.isNaN(Date.parse(result.serverNow))).toBe(false);
+  });
+
+  it('a token for a private hunt the player has never joined returns private_hunt', async () => {
+    await seedLiveHuntWithToken('qr-private', 'code');
+
+    const result = await redeemQrHandler(
+      { token: 'qr-private', clientRequestId: randomUUID() },
+      UID,
+    );
+    expect(result).toMatchObject({ ok: false, reason: 'private_hunt' });
+
+    const card = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${STATION_ID}`).get();
+    expect(card.exists).toBe(false);
+  });
+
+  it('a token for a private hunt the player already joined still unlocks the station', async () => {
+    await seedLiveHuntWithToken('qr-private', 'code');
+    await db.doc(`progress/${UID}_${HUNT_ID}`).set({
+      uid: UID,
+      huntId: HUNT_ID,
+      solvedStationIds: [],
+      unlockedStationIds: [],
+      revealedStationIds: [],
+      solvedCount: 0,
+      totalCount: 12,
+      completionPct: 0,
+    });
+
+    const result = await redeemQrHandler(
+      { token: 'qr-private', clientRequestId: randomUUID() },
+      UID,
+    );
+    expect(result).toMatchObject({ ok: true, stationId: STATION_ID });
+  });
+
+  it('a token for a public hunt the player has never joined unlocks it directly', async () => {
+    await seedLiveHuntWithToken('qr-public', 'public');
+
+    const result = await redeemQrHandler(
+      { token: 'qr-public', clientRequestId: randomUUID() },
+      UID,
+    );
+    expect(result).toMatchObject({ ok: true, stationId: STATION_ID });
   });
 });

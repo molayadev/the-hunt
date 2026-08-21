@@ -5,6 +5,8 @@ import type {
   StartHuntResult,
   SubmitAnswerInput,
   SubmitAnswerResult,
+  UnlockWithPasswordInput,
+  UnlockWithPasswordResult,
 } from '../../domain/callables';
 import { functions, httpsCallable } from './firebase';
 
@@ -16,3 +18,8 @@ export const submitAnswer = httpsCallable<SubmitAnswerInput, SubmitAnswerResult>
 );
 
 export const startHunt = httpsCallable<StartHuntInput, StartHuntResult>(functions, 'startHunt');
+
+export const unlockWithPassword = httpsCallable<UnlockWithPasswordInput, UnlockWithPasswordResult>(
+  functions,
+  'unlockWithPassword',
+);

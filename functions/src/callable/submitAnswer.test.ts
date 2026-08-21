@@ -94,6 +94,7 @@ describe('submitAnswerHandler', () => {
       title: 'Estación 6',
       clue: 'Pista de la estación 6',
       state: 'revealed',
+      unlock: 'qr',
     });
 
     const prevCard = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${PREV_STATION_ID}`).get();
@@ -102,6 +103,39 @@ describe('submitAnswerHandler', () => {
       title: 'Estación 4',
       clue: 'Pista de la estación 4',
       state: 'revealed',
+      unlock: 'qr',
+    });
+  });
+
+  it('a neighbour with unlock: "none" skips revealed and unlocks straight away', async () => {
+    await seedHunt();
+    await db.doc(`hunts/${HUNT_ID}/stations/${NEXT_STATION_ID}`).update({ unlock: 'none' });
+
+    await submit('la torre');
+
+    const nextCard = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${NEXT_STATION_ID}`).get();
+    expect(nextCard.data()).toMatchObject({
+      state: 'unlocked',
+      challenge: { type: 'text', question: '¿Qué edificio es?' },
+      recentFailures: [],
+    });
+
+    const progress = await db.doc(`progress/${UID}_${HUNT_ID}`).get();
+    expect(progress.data()?.unlockedStationIds).toContain(NEXT_STATION_ID);
+  });
+
+  it('a revealed neighbour carries its location when the station has one', async () => {
+    await seedHunt();
+    await db.doc(`hunts/${HUNT_ID}/stations/${NEXT_STATION_ID}`).update({
+      location: { mapsUrl: 'https://maps.example/x', hint: 'Bajo el reloj' },
+    });
+
+    await submit('la torre');
+
+    const nextCard = await db.doc(`progress/${UID}_${HUNT_ID}/cards/${NEXT_STATION_ID}`).get();
+    expect(nextCard.data()?.location).toEqual({
+      mapsUrl: 'https://maps.example/x',
+      hint: 'Bajo el reloj',
     });
   });
 

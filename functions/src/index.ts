@@ -3,7 +3,13 @@ import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { redeemQrHandler } from './callable/redeemQr';
 import { startHuntHandler } from './callable/startHunt';
 import { submitAnswerHandler } from './callable/submitAnswer';
-import type { RedeemQrInput, StartHuntInput, SubmitAnswerInput } from './domain/callables';
+import { unlockWithPasswordHandler } from './callable/unlockWithPassword';
+import type {
+  RedeemQrInput,
+  StartHuntInput,
+  SubmitAnswerInput,
+  UnlockWithPasswordInput,
+} from './domain/callables';
 
 function requireUid(auth: CallableRequest['auth']): string {
   if (!auth) throw new HttpsError('unauthenticated', 'Sign-in required.');
@@ -29,4 +35,9 @@ export const submitAnswer = onCall<SubmitAnswerInput>(
 export const startHunt = onCall<StartHuntInput>(
   { enforceAppCheck: !isRunningInEmulator },
   (request) => startHuntHandler(request.data, requireUid(request.auth)),
+);
+
+export const unlockWithPassword = onCall<UnlockWithPasswordInput>(
+  { enforceAppCheck: !isRunningInEmulator },
+  (request) => unlockWithPasswordHandler(request.data, requireUid(request.auth)),
 );

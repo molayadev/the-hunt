@@ -26,7 +26,30 @@ export type RedeemQrResult = Envelope &
         readonly stationId: string;
         readonly alreadyUnlocked: boolean;
       }
-    | { readonly ok: false; readonly reason: 'invalid_token' | 'hunt_not_live' }
+    | {
+        readonly ok: false;
+        readonly reason: 'invalid_token' | 'hunt_not_live' | 'private_hunt';
+      }
+  );
+
+export interface UnlockWithPasswordInput {
+  readonly huntId: string;
+  readonly stationId: string;
+  readonly password: string;
+  readonly clientRequestId: string;
+}
+
+export type UnlockWithPasswordResult = Envelope &
+  (
+    | {
+        readonly ok: true;
+        readonly stationId: string;
+        readonly alreadyUnlocked: boolean;
+      }
+    | {
+        readonly ok: false;
+        readonly reason: 'incorrect_password' | 'hunt_not_live' | 'private_hunt';
+      }
   );
 
 export interface StartHuntInput {

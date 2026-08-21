@@ -123,6 +123,9 @@ export async function submitAnswerHandler(
         return { id, cardRef, snap: await tx.get(cardRef) };
       }),
     );
+    // A station with unlock: 'none' skips the 'revealed' gate entirely — it
+    // resolves straight to 'unlocked' the moment a neighbour reveals it.
+    const autoUnlockedIds = newlyRevealed.filter((id) => stationsById.get(id)?.unlock === 'none');
 
     tx.set(
       progressRef,
@@ -130,7 +133,7 @@ export async function submitAnswerHandler(
         uid,
         huntId: input.huntId,
         solvedStationIds: nextState.solvedStationIds,
-        unlockedStationIds: nextState.unlockedStationIds,
+        unlockedStationIds: [...new Set([...nextState.unlockedStationIds, ...autoUnlockedIds])],
         revealedStationIds: nextState.revealedStationIds,
         solvedCount: nextState.solvedStationIds.length,
         totalCount: hunt.stationCount,
@@ -146,12 +149,26 @@ export async function submitAnswerHandler(
       if (snap.exists) return;
       const neighbourStation = stationsById.get(id);
       if (!neighbourStation) return;
-      tx.set(neighbourCardRef, {
+      const base = {
         order: neighbourStation.order,
         title: neighbourStation.title,
         clue: neighbourStation.clue,
-        state: 'revealed',
-      });
+        ...(neighbourStation.location ? { location: neighbourStation.location } : {}),
+      };
+      if (neighbourStation.unlock === 'none') {
+        tx.set(neighbourCardRef, {
+          ...base,
+          state: 'unlocked',
+          challenge: neighbourStation.challenge,
+          recentFailures: [],
+        });
+      } else {
+        tx.set(neighbourCardRef, {
+          ...base,
+          state: 'revealed',
+          unlock: neighbourStation.unlock ?? 'qr',
+        });
+      }
     });
 
     const result = withServerNow({
