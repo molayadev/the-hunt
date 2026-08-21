@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet, useMatches } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useSession } from '../../features/auth/session';
+import { HuntIcon } from '../../features/hunt/HuntIcon';
 import { StationCard } from '../../features/hunt/StationCard';
 import { useHunt } from '../../features/hunt/useHunt';
 import { RouteMap } from '../../features/progress/RouteMap';
@@ -43,7 +44,10 @@ function HuntScreen() {
     <main className="flex min-h-svh flex-col items-center gap-6 p-6">
       {hunt && (
         <header className="flex max-w-sm flex-col items-center gap-1 text-center">
-          <h1 className="font-display text-2xl font-semibold text-foreground">{hunt.title}</h1>
+          <div className="flex items-center gap-2">
+            <HuntIcon icon={hunt.icon} title={hunt.title} />
+            <h1 className="font-display text-2xl font-semibold text-foreground">{hunt.title}</h1>
+          </div>
           {hunt.tagline && <p className="text-sm text-muted-foreground">{hunt.tagline}</p>}
         </header>
       )}
