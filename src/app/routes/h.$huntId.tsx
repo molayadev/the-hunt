@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet, useMatches, useNavigate } from '@tanstack/react-router';
 import { useSession } from '../../features/auth/session';
 import { StationCard } from '../../features/hunt/StationCard';
+import { useHunt } from '../../features/hunt/useHunt';
 import { ProgressConstellation } from '../../features/progress/ProgressConstellation';
 import { useHuntProgress } from '../../features/progress/useHuntProgress';
 import type { ConstellationStation } from '../../features/progress/ProgressConstellation';
@@ -14,6 +15,7 @@ function HuntScreen() {
   const { uid } = useSession();
   const navigate = useNavigate();
   const matches = useMatches();
+  const hunt = useHunt(huntId);
   const { summary, cards, isLoading } = useHuntProgress(uid, huntId);
 
   const isChildRouteActive = matches[matches.length - 1]?.routeId !== Route.id;
@@ -37,7 +39,7 @@ function HuntScreen() {
     <main className="flex min-h-svh flex-col items-center gap-6 p-6">
       <ProgressConstellation
         stations={constellationStations}
-        totalCount={summary?.totalCount ?? 0}
+        totalCount={summary?.totalCount ?? hunt?.stationCount ?? 0}
         solvedCount={summary?.solvedCount ?? 0}
         completionPct={summary?.completionPct ?? 0}
       />
@@ -48,6 +50,17 @@ function HuntScreen() {
       >
         Ver mis premios
       </Link>
+
+      {cards.length === 0 && (
+        <p className="max-w-sm text-center text-muted-foreground">
+          Todavía no has desbloqueado ninguna estación.{' '}
+          <Link to="/scan" className="font-semibold text-primary underline">
+            Escanea el primer código QR
+          </Link>{' '}
+          para empezar.
+        </p>
+      )}
+
       <div className="flex w-full max-w-sm flex-col gap-3">
         {[...cards]
           .sort((a, b) => a.order - b.order)
