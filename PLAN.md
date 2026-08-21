@@ -3,8 +3,10 @@
 > App de búsqueda del tesoro por QR. Ruta no lineal, progreso persistente, premios digitales y físicos.
 > Cliente jugador (esta app) + panel de creación de rutas (app hermana, misma DB).
 
-**Versión:** 0.3 · **Estado:** en desarrollo — Fase 2 (backend) completada, Fase 3 (cliente) siguiente
+**Versión:** 0.4 · **Estado:** Fases 0-5 del roadmap completadas — app funcionalmente completa de extremo a extremo, verificada contra el emulador
 
+> **Cambios en 0.4** — Fases 3, 4 y 5 completadas: cliente entero (unirse, estación, intentos, constelación, premios), campo (escaneo QR, cola offline, notificaciones), y cierre (e2e, code-splitting confirmado, contrato de datos documentado). El e2e destapó dos bugs reales — `<Outlet />` ausente y App Check bloqueando el emulador — ambos arreglados. Ver §12 para el detalle fase a fase.
+>
 > **Cambios en 0.3** — Se documenta el progreso real de implementación: Fases 0-2 del roadmap (§12) completadas, incluido el cierre de Fase 2 con App Check forzado en las dos callables. Se añade nota sobre el symlink `functions/src/domain` en Windows (§6.1). Se resuelve la pregunta abierta de acumulación de intentos (§13.1).
 >
 > **Cambios en 0.2** — Los intentos pasan de _token bucket con recarga a medianoche de Madrid_ a **ventana deslizante de 24 h**. Desaparecen la zona horaria, el DST y el estado `lastRefillDay`. Se añade reto de **respuesta libre con normalización** (case-insensitive) validado en servidor.
@@ -854,13 +856,17 @@ feat(prizes): Add prize wallet and redemption instructions ✅
 
 Sin cámara real disponible para verificar el decodificado en vivo: `CameraPermissionGate` se verificó en el navegador (deniega sin error críptico), y `useQrDecoder`/`QrViewfinder` quedan como código de integración sin test dedicado, igual que `shared/lib/firebase.ts`.
 
-### Fase 5 — Cierre
+### Fase 5 — Cierre ✅
 
 ```
-test(e2e): Add failing scan-solve-unlock happy path
-perf(ui): Lazy-load scanner bundle behind route
-docs(readme): Document data model and route creation contract
+test(e2e): Add failing scan-solve-unlock happy path ✅
+perf(ui): Lazy-load scanner bundle behind route ✅ (ya lo daba gratis autoCodeSplitting de TanStack Router; confirmado en el build: scan-*.js es su propio chunk de ~135 kB)
+docs(readme): Document data model and route creation contract ✅
 ```
+
+El e2e destapó dos bugs reales que ningún test unitario podía ver: `h.$huntId.tsx` no renderizaba `<Outlet />`, así que `/h/$huntId/s/$stationId` y `/h/$huntId/prizes` nunca habían sido alcanzables por ninguna navegación real pese a compilar y pasar sus propios tests; y `enforceAppCheck: true` bloqueaba toda llamada real a `redeemQr`/`submitAnswer` en local, porque el cliente nunca inicializa App Check contra el emulador. Ambos arreglados — ver los commits `fix(hunt)` y `fix(functions)` correspondientes.
+
+**Rastro está funcionalmente completo de extremo a extremo**: unirse por código, escanear (o simularlo), resolver, ver premios, notificaciones — todo verificado contra el emulador. Pendiente real, no cosmético: vincular cuenta anónima a email (§13.5), probar contra un proyecto de Firebase real desplegado, y decidir las preguntas abiertas de §13.
 
 ---
 
