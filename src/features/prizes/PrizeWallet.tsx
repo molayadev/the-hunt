@@ -1,7 +1,24 @@
+import { isUrl } from '../../domain/station/isUrl';
 import type { WonPrize } from './solvedPrizes';
 
 export interface PrizeWalletProps {
   readonly prizes: readonly WonPrize[];
+}
+
+function PrizeLinkOrText({ value, linkLabel }: { value: string; linkLabel: string }) {
+  if (isUrl(value)) {
+    return (
+      <a
+        href={value}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-1 inline-block text-sm font-medium text-primary underline"
+      >
+        {linkLabel}
+      </a>
+    );
+  }
+  return <p className="mt-1 text-sm text-muted-foreground">{value}</p>;
 }
 
 export function PrizeWallet({ prizes }: PrizeWalletProps) {
@@ -20,7 +37,10 @@ export function PrizeWallet({ prizes }: PrizeWalletProps) {
           <p className="text-xs text-muted-foreground">{won.stationTitle}</p>
           <p className="font-display text-lg font-semibold text-primary">{won.prize.title}</p>
           {won.prize.kind === 'physical' && won.prize.redeemInstructions && (
-            <p className="mt-1 text-sm text-muted-foreground">{won.prize.redeemInstructions}</p>
+            <PrizeLinkOrText value={won.prize.redeemInstructions} linkLabel="Ver ubicación" />
+          )}
+          {won.prize.kind === 'digital' && won.prize.payload && (
+            <PrizeLinkOrText value={won.prize.payload} linkLabel="Abrir" />
           )}
         </li>
       ))}
