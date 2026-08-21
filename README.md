@@ -38,7 +38,13 @@ Esto escribe dos rutas jugables directamente en el emulador de Firestore:
 | Ruta del Parque | `PARQUE2026`                 | es     | La Fuente · El Roble Viejo · El Quiosco · La Estatua (4) |
 | City Trail      | `CITYTRAIL`                  | en     | Old Clock Tower · Market Square · Riverside Bridge (3)   |
 
-Al unirte con el código se desbloquea automáticamente la primera estación (La Fuente / Old Clock Tower) — no hace falta ningún QR para empezar. Para las siguientes, como todavía no hay códigos QR físicos que imprimir, cada estación tiene también un **token de prueba** que se puede escribir a mano en `/scan` (campo "Código de la estación", debajo del visor de cámara): `demo-parque-fuente`, `demo-parque-roble`, `demo-parque-quiosco`, `demo-parque-estatua`, `demo-city-clocktower`, `demo-city-market`, `demo-city-bridge`. Resolver una estación revela sus vecinas en el mapa, pero hace falta su propio token para poder responder.
+Al unirte con el código se desbloquea automáticamente la primera estación (La Fuente / Old Clock Tower) — no hace falta ningún QR para empezar. Resolver una estación revela sus vecinas en el mapa (aparecen en gris) — para desbloquearlas hace falta lo que pida esa estación en concreto, que varía:
+
+- **QR** (la mayoría): como todavía no hay códigos físicos que imprimir, cada estación `qr` tiene un **token de prueba** que se escribe a mano en `/scan` o directamente en el botón "Escanear código QR" del panel de la estación: `demo-parque-fuente`, `demo-parque-quiosco`, `demo-parque-estatua`, `demo-city-clocktower`, `demo-city-market`.
+- **Palabra clave**: El Roble Viejo (`raiz2026`) y Riverside Bridge (`arch3`) no tienen QR — se desbloquean escribiendo la palabra directamente en el panel de la estación.
+- **Sin desbloqueo**: El Quiosco no necesita ni QR ni palabra — en cuanto se revela, ya se puede responder.
+
+Además, El Roble Viejo, La Estatua y Market Square tienen una **ubicación** (botón "Ver ubicación" que abre Maps, más una pista de qué buscar allí) visible en el panel aunque todavía estén bloqueadas.
 
 Respuestas:
 
