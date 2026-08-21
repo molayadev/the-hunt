@@ -45,6 +45,11 @@ describe('StationCard', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
+  it('a revealed card hints that its QR still needs to be scanned', () => {
+    render(<StationCard card={revealedCard} />);
+    expect(screen.getByText(/escanea su código qr/i)).toBeInTheDocument();
+  });
+
   it('an unlocked card shows the clue and a call to action, but not the question text', () => {
     render(<StationCard card={unlockedCard} />);
     expect(screen.getByText(unlockedCard.clue)).toBeInTheDocument();
