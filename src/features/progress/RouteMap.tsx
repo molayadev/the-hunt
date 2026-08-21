@@ -35,8 +35,8 @@ const MARGIN = 32;
 
 function isInteractive(
   node: RouteMapNode,
-): node is Extract<RouteMapNode, { state: 'unlockable' | 'solved' }> {
-  return node.state === 'unlockable' || node.state === 'solved';
+): node is Extract<RouteMapNode, { state: 'unlockable' | 'solved' | 'locked' }> {
+  return node.state === 'unlockable' || node.state === 'solved' || node.state === 'locked';
 }
 
 function nodeLabel(node: RouteMapNode): string {
