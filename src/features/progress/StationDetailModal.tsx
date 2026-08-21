@@ -1,7 +1,11 @@
+import { Link } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { AnswerForm } from '../attempts/AnswerForm';
 import { AttemptHearts } from '../attempts/AttemptHearts';
 import { useStationSolver } from '../attempts/useStationSolver';
+import { LocationButton } from './LocationButton';
+import { PasswordUnlockForm } from './PasswordUnlockForm';
+import { useUnlockWithPassword } from './useUnlockWithPassword';
 import type { Card } from '../../shared/types/card';
 import type { HuntSummary } from '../../shared/types/hunt';
 
@@ -14,6 +18,7 @@ export interface StationDetailModalProps {
 
 export function StationDetailModal({ card, huntId, hunt, onClose }: StationDetailModalProps) {
   const solver = useStationSolver(huntId, card.id, card, hunt);
+  const passwordUnlock = useUnlockWithPassword(huntId, card.id);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -62,11 +67,23 @@ export function StationDetailModal({ card, huntId, hunt, onClose }: StationDetai
 
         <p className="text-sm text-muted-foreground">{card.clue}</p>
 
-        {card.state === 'revealed' && (
-          <p className="text-sm text-muted-foreground">
-            Aún bloqueada — escanea su código QR para desbloquearla.
-          </p>
-        )}
+        {card.location && <LocationButton location={card.location} />}
+
+        {card.state === 'revealed' &&
+          (card.unlock === 'qr' ? (
+            <Link
+              to="/scan"
+              className="self-start rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground"
+            >
+              Escanear código QR
+            </Link>
+          ) : (
+            <PasswordUnlockForm
+              disabled={passwordUnlock.isPending}
+              errorMessage={passwordUnlock.errorMessage}
+              onSubmit={passwordUnlock.unlock}
+            />
+          ))}
 
         {showSolved && (
           <p className="flex items-center gap-2 font-display text-lg font-semibold text-primary">
