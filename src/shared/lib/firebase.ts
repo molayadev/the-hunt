@@ -12,11 +12,15 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
   query,
+  serverTimestamp,
+  setDoc,
   where,
 } from 'firebase/firestore';
+import { isSupported as isMessagingSupported } from 'firebase/messaging';
+import type { Unsubscribe } from 'firebase/messaging';
 
 export { onAuthStateChanged, signInAnonymously, httpsCallable };
-export { collection, doc, getDocs, limit, onSnapshot, query, where };
+export { collection, doc, getDocs, limit, onSnapshot, query, serverTimestamp, setDoc, where };
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? 'demo-api-key',
@@ -40,4 +44,18 @@ if (useEmulators && import.meta.env.DEV) {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
   connectFirestoreEmulator(db, '127.0.0.1', 8080);
   connectFunctionsEmulator(functions, '127.0.0.1', 5001);
+}
+
+// Uses register()/onRegistered() (Firebase Installation ID-based messaging), the
+// documented replacement for the deprecated getToken() single-shot token API.
+export async function registerForPush(
+  onRegisteredId: (id: string) => void,
+): Promise<Unsubscribe | null> {
+  if (!(await isMessagingSupported())) return null;
+  const { getMessaging, onRegistered, register } = await import('firebase/messaging');
+  const messaging = getMessaging(app);
+  const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+  const unsubscribe = onRegistered(messaging, onRegisteredId);
+  await register(messaging, vapidKey === undefined ? {} : { vapidKey });
+  return unsubscribe;
 }

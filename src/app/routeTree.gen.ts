@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as ScanRouteImport } from './routes/scan'
 import { Route as HHuntIdRouteImport } from './routes/h.$huntId'
@@ -17,6 +18,11 @@ import { Route as HHuntIdRouteImport } from './routes/h.$huntId'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinRoute = JoinRouteImport.update({
@@ -37,12 +43,14 @@ const HHuntIdRoute = HHuntIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/join': typeof JoinRoute
   '/scan': typeof ScanRoute
   '/h/$huntId': typeof HHuntIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/join': typeof JoinRoute
   '/scan': typeof ScanRoute
   '/h/$huntId': typeof HHuntIdRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/join': typeof JoinRoute
   '/scan': typeof ScanRoute
   '/h/$huntId': typeof HHuntIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/join' | '/scan' | '/h/$huntId'
+  fullPaths: '/' | '/account' | '/join' | '/scan' | '/h/$huntId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/join' | '/scan' | '/h/$huntId'
-  id: '__root__' | '/' | '/join' | '/scan' | '/h/$huntId'
+  to: '/' | '/account' | '/join' | '/scan' | '/h/$huntId'
+  id: '__root__' | '/' | '/account' | '/join' | '/scan' | '/h/$huntId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   JoinRoute: typeof JoinRoute
   ScanRoute: typeof ScanRoute
   HHuntIdRoute: typeof HHuntIdRoute
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join': {
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   JoinRoute: JoinRoute,
   ScanRoute: ScanRoute,
   HHuntIdRoute: HHuntIdRoute,
