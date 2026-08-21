@@ -5,12 +5,13 @@ export interface QueuedScan {
 }
 
 export function enqueueScan(queue: readonly QueuedScan[], scan: QueuedScan): readonly QueuedScan[] {
-  return [scan];
+  if (queue.some((queued) => queued.token === scan.token)) return queue;
+  return [...queue, scan];
 }
 
 export function dequeueScan(
   queue: readonly QueuedScan[],
   clientRequestId: string,
 ): readonly QueuedScan[] {
-  return [...queue, { token: clientRequestId, clientRequestId, queuedAt: 0 }];
+  return queue.filter((queued) => queued.clientRequestId !== clientRequestId);
 }
