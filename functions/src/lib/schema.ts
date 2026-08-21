@@ -60,6 +60,19 @@ export interface PrizeDoc {
   readonly redeemInstructions?: string;
 }
 
+// How a station gets from 'revealed' to 'unlocked': 'qr' scans its physical
+// code (as today), 'password' types a word/code found anywhere (physical or
+// not — no sticker required), 'none' needs no separate step at all, so a
+// newly-revealed station of this kind is written straight to 'unlocked'.
+// Absent on a StationDoc defaults to 'qr', for stations authored before this
+// field existed.
+export type UnlockMethod = 'qr' | 'password' | 'none';
+
+export interface StationLocationDoc {
+  readonly mapsUrl: string;
+  readonly hint: string;
+}
+
 export interface StationDoc {
   readonly order: number;
   readonly title: string;
@@ -67,12 +80,15 @@ export interface StationDoc {
   readonly coverUrl?: string;
   readonly challenge: ChallengeDoc;
   readonly prize: PrizeDoc;
+  readonly unlock?: UnlockMethod;
+  readonly location?: StationLocationDoc;
 }
 
 export interface StationAnswerDoc {
   readonly acceptedAnswers?: readonly string[]; // 'text'
   readonly correctOptionId?: string; // 'single_option'
   readonly correctOptionIds?: readonly string[]; // 'multiple_option' — exact set
+  readonly acceptedPasswords?: readonly string[]; // unlock: 'password'
 }
 
 export interface QrTokenDoc {
@@ -102,10 +118,11 @@ interface CardBaseDoc {
   readonly order: number;
   readonly title: string;
   readonly clue: string;
+  readonly location?: StationLocationDoc;
 }
 
 export type CardDoc =
-  | (CardBaseDoc & { readonly state: 'revealed' })
+  | (CardBaseDoc & { readonly state: 'revealed'; readonly unlock: 'qr' | 'password' })
   | (CardBaseDoc & {
       readonly state: 'unlocked';
       readonly challenge: ChallengeDoc;

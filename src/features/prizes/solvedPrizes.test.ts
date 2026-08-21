@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { solvedPrizes } from './solvedPrizes';
 import type { Card } from '../../shared/types/card';
 
-const revealed: Card = { id: 's1', order: 1, title: 'Estación 1', clue: 'clue', state: 'revealed' };
+const revealed: Card = {
+  id: 's1',
+  order: 1,
+  title: 'Estación 1',
+  clue: 'clue',
+  state: 'revealed',
+  unlock: 'qr',
+};
 const unlocked: Card = {
   id: 's2',
   order: 2,

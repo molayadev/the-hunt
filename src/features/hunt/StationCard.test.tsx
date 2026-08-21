@@ -9,6 +9,7 @@ const revealedCard: Card = {
   title: 'Estación 6',
   clue: 'Busca donde el reloj marca las horas',
   state: 'revealed',
+  unlock: 'qr',
 };
 
 const unlockedCard: Card = {

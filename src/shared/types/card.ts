@@ -35,15 +35,21 @@ export interface Prize {
   readonly redeemInstructions?: string;
 }
 
+export interface StationLocation {
+  readonly mapsUrl: string;
+  readonly hint: string;
+}
+
 interface CardBase {
   readonly id: string;
   readonly order: number;
   readonly title: string;
   readonly clue: string;
+  readonly location?: StationLocation;
 }
 
 export type Card =
-  | (CardBase & { readonly state: 'revealed' })
+  | (CardBase & { readonly state: 'revealed'; readonly unlock: 'qr' | 'password' })
   | (CardBase & {
       readonly state: 'unlocked';
       readonly challenge: Challenge;

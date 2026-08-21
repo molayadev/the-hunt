@@ -22,6 +22,7 @@ const lockedCard: Card = {
   title: 'El Quiosco',
   clue: 'Donde suena la música.',
   state: 'revealed',
+  unlock: 'qr',
 };
 
 const unlockedCard: Card = {

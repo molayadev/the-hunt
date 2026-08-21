@@ -29,6 +29,7 @@ const revealed: Card = {
   title: 'El Quiosco',
   clue: 'clue c',
   state: 'revealed',
+  unlock: 'qr',
 };
 
 describe('toRouteMapNodes', () => {
