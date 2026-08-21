@@ -24,6 +24,12 @@ functions/lib
 # Test coverage
 coverage
 
+# Playwright
+test-results
+playwright-report
+blob-report
+playwright/.cache
+
 # Firebase local emulator state
 .firebase
 *firebase-debug.log
