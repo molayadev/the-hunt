@@ -2,7 +2,8 @@ import { FieldValue } from 'firebase-admin/firestore';
 import type { RedeemQrInput, RedeemQrResult } from '../domain/callables';
 import { withServerNow } from '../lib/envelope';
 import { db } from '../lib/firestore';
-import type { CardDoc, HuntDoc, ProgressDoc, QrTokenDoc, StationDoc } from '../lib/schema';
+import type { HuntDoc, QrTokenDoc } from '../lib/schema';
+import { unlockStationInTransaction } from '../lib/unlockStation';
 
 export async function redeemQrHandler(input: RedeemQrInput, uid: string): Promise<RedeemQrResult> {
   return db.runTransaction(async (tx) => {
@@ -21,7 +22,6 @@ export async function redeemQrHandler(input: RedeemQrInput, uid: string): Promis
     }
 
     const progressId = `${uid}_${tokenData.huntId}`;
-    const progressRef = db.doc(`progress/${progressId}`);
     const eventRef = db.doc(`progress/${progressId}/events/${input.clientRequestId}`);
     const eventSnap = await tx.get(eventRef);
     if (eventSnap.exists) {
@@ -34,51 +34,15 @@ export async function redeemQrHandler(input: RedeemQrInput, uid: string): Promis
       } as const);
     }
 
-    const [progressSnap, stationSnap] = await Promise.all([
-      tx.get(progressRef),
-      tx.get(db.doc(`hunts/${tokenData.huntId}/stations/${tokenData.stationId}`)),
-    ]);
-    const progressData = progressSnap.data() as ProgressDoc | undefined;
-    const station = stationSnap.data() as StationDoc;
-
-    const existingUnlocked = progressData?.unlockedStationIds ?? [];
-    const alreadyUnlocked = existingUnlocked.includes(tokenData.stationId);
+    const { alreadyUnlocked } = await unlockStationInTransaction({
+      tx,
+      uid,
+      huntId: tokenData.huntId,
+      stationId: tokenData.stationId,
+      huntData,
+    });
 
     if (!alreadyUnlocked) {
-      const card: CardDoc = {
-        order: station.order,
-        title: station.title,
-        clue: station.clue,
-        challenge: station.challenge,
-        state: 'unlocked',
-        recentFailures: [],
-      };
-      tx.set(db.doc(`progress/${progressId}/cards/${tokenData.stationId}`), card);
-
-      if (progressSnap.exists) {
-        tx.update(progressRef, {
-          unlockedStationIds: FieldValue.arrayUnion(tokenData.stationId),
-          lastActivityAt: FieldValue.serverTimestamp(),
-        });
-      } else {
-        const newProgress: Omit<ProgressDoc, 'completedAt' | 'recentFailures'> & {
-          startedAt: FieldValue;
-          lastActivityAt: FieldValue;
-        } = {
-          uid,
-          huntId: tokenData.huntId,
-          solvedStationIds: [],
-          unlockedStationIds: [tokenData.stationId],
-          revealedStationIds: [],
-          solvedCount: 0,
-          totalCount: huntData.stationCount,
-          completionPct: 0,
-          startedAt: FieldValue.serverTimestamp(),
-          lastActivityAt: FieldValue.serverTimestamp(),
-        };
-        tx.set(progressRef, newProgress);
-      }
-
       tx.update(tokenRef, { redeemCount: FieldValue.increment(1) });
     }
 
