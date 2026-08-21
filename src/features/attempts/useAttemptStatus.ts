@@ -8,6 +8,7 @@ import {
 export interface AttemptStatus {
   readonly attemptsLeft: number;
   readonly retryAt: number | null;
+  readonly remainingMs: number | null;
 }
 
 export function useAttemptStatus(
@@ -25,8 +26,10 @@ export function useAttemptStatus(
     };
   }, []);
 
+  const retryAt = computeRetryAt(failures, now, policy);
   return {
     attemptsLeft: computeAttemptsLeft(failures, now, policy),
-    retryAt: computeRetryAt(failures, now, policy),
+    retryAt,
+    remainingMs: retryAt === null ? null : Math.max(0, retryAt - now),
   };
 }

@@ -35,10 +35,21 @@ describe('useAttemptStatus', () => {
     expect(result.current.attemptsLeft).toBe(1);
   });
 
-  it('retryAt is null once attempts are available', () => {
+  it('retryAt and remainingMs are null once attempts are available', () => {
     vi.useFakeTimers();
     vi.setSystemTime(Date.parse('2026-08-21T12:00:00.000Z'));
     const { result } = renderHook(() => useAttemptStatus([], policy));
     expect(result.current.retryAt).toBeNull();
+    expect(result.current.remainingMs).toBeNull();
+  });
+
+  it('remainingMs is the time left until the oldest failure expires', () => {
+    vi.useFakeTimers();
+    const now = Date.parse('2026-08-21T12:00:00.000Z');
+    vi.setSystemTime(now);
+    const { result } = renderHook(() =>
+      useAttemptStatus([now - 4000, now - 4000, now - 4000], policy),
+    );
+    expect(result.current.remainingMs).toBe(1000);
   });
 });
