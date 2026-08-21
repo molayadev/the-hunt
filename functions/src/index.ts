@@ -9,10 +9,18 @@ function requireUid(auth: CallableRequest['auth']): string {
   return auth.uid;
 }
 
-export const redeemQr = onCall<RedeemQrInput>({ enforceAppCheck: true }, (request) =>
-  redeemQrHandler(request.data, requireUid(request.auth)),
+// The Functions emulator sets this automatically; real deployments never do.
+// There is no App Check emulator wired up, and the client never initializes
+// App Check against emulator credentials, so enforcing it locally would
+// reject every callable — see PLAN.md §4.2 for why it stays on in production.
+const isRunningInEmulator = process.env.FUNCTIONS_EMULATOR === 'true';
+
+export const redeemQr = onCall<RedeemQrInput>(
+  { enforceAppCheck: !isRunningInEmulator },
+  (request) => redeemQrHandler(request.data, requireUid(request.auth)),
 );
 
-export const submitAnswer = onCall<SubmitAnswerInput>({ enforceAppCheck: true }, (request) =>
-  submitAnswerHandler(request.data, requireUid(request.auth)),
+export const submitAnswer = onCall<SubmitAnswerInput>(
+  { enforceAppCheck: !isRunningInEmulator },
+  (request) => submitAnswerHandler(request.data, requireUid(request.auth)),
 );
