@@ -3,6 +3,7 @@ import { vibrateOnDecode } from '../../domain/scan/hapticFeedback';
 import { redeemQr } from '../../shared/lib/callables';
 import { indexedDbScanQueueStore } from '../../shared/lib/scanQueueStore';
 import { CameraPermissionGate } from '../../features/scan/CameraPermissionGate';
+import { ManualTokenEntry } from '../../features/scan/ManualTokenEntry';
 import { OfflineQueueBanner } from '../../features/scan/OfflineQueueBanner';
 import { QrViewfinder } from '../../features/scan/QrViewfinder';
 import { TorchToggle } from '../../features/scan/TorchToggle';
@@ -42,6 +43,7 @@ function ScanScreen() {
       <div className="absolute inset-x-0 bottom-6 flex flex-col items-center gap-3 px-6">
         <OfflineQueueBanner queuedCount={queue.length} />
         <TorchToggle isSupported={torch.isSupported} isOn={torch.isOn} onToggle={torch.toggle} />
+        <ManualTokenEntry onSubmit={enqueueToken} />
       </div>
     </main>
   );
