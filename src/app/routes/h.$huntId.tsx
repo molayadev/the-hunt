@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, Outlet, useMatches, useNavigate } from '@tanstack/react-router';
 import { useSession } from '../../features/auth/session';
 import { StationCard } from '../../features/hunt/StationCard';
 import { ProgressConstellation } from '../../features/progress/ProgressConstellation';
@@ -13,7 +13,11 @@ function HuntScreen() {
   const { huntId } = Route.useParams();
   const { uid } = useSession();
   const navigate = useNavigate();
+  const matches = useMatches();
   const { summary, cards, isLoading } = useHuntProgress(uid, huntId);
+
+  const isChildRouteActive = matches[matches.length - 1]?.routeId !== Route.id;
+  if (isChildRouteActive) return <Outlet />;
 
   if (isLoading) {
     return (
