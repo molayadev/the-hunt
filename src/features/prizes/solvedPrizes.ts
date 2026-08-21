@@ -7,5 +7,7 @@ export interface WonPrize {
 }
 
 export function solvedPrizes(cards: readonly Card[]): readonly WonPrize[] {
-  return cards as unknown as readonly WonPrize[];
+  return cards
+    .filter((card) => card.state === 'solved')
+    .map((card) => ({ stationId: card.id, stationTitle: card.title, prize: card.prize }));
 }
