@@ -10,25 +10,28 @@ const unlocked: Card = {
   clue: 'clue',
   state: 'unlocked',
   challenge: { type: 'qr_only' },
+  recentFailures: [],
 };
-const solvedDigital: Card = {
+const solvedDigital = {
   id: 's3',
   order: 3,
   title: 'Estación 3',
   clue: 'clue',
   state: 'solved',
   challenge: { type: 'qr_only' },
+  recentFailures: [],
   prize: { kind: 'digital', title: 'Pista extra' },
-};
-const solvedPhysical: Card = {
+} as const satisfies Card;
+const solvedPhysical = {
   id: 's4',
   order: 4,
   title: 'Estación 4',
   clue: 'clue',
   state: 'solved',
   challenge: { type: 'qr_only' },
+  recentFailures: [],
   prize: { kind: 'physical', title: 'Pegatina', redeemInstructions: 'Enséñasela al organizador' },
-};
+} as const satisfies Card;
 
 describe('solvedPrizes', () => {
   it('returns nothing when no station is solved', () => {

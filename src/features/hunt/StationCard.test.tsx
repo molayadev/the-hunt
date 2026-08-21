@@ -18,6 +18,7 @@ const unlockedCard: Card = {
   clue: 'Pista de la estación 5',
   state: 'unlocked',
   challenge: { type: 'text', question: '¿Qué edificio es?', hint: 'Es de piedra' },
+  recentFailures: [],
 };
 
 const solvedCard: Card = {
@@ -27,6 +28,7 @@ const solvedCard: Card = {
   clue: 'Pista de la estación 4',
   state: 'solved',
   challenge: { type: 'text', question: '¿Qué edificio es?' },
+  recentFailures: [],
   prize: { kind: 'digital', title: 'Pista extra' },
 };
 

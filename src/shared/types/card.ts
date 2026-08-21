@@ -33,5 +33,14 @@ interface CardBase {
 
 export type Card =
   | (CardBase & { readonly state: 'revealed' })
-  | (CardBase & { readonly state: 'unlocked'; readonly challenge: Challenge })
-  | (CardBase & { readonly state: 'solved'; readonly challenge: Challenge; readonly prize: Prize });
+  | (CardBase & {
+      readonly state: 'unlocked';
+      readonly challenge: Challenge;
+      readonly recentFailures: readonly number[];
+    })
+  | (CardBase & {
+      readonly state: 'solved';
+      readonly challenge: Challenge;
+      readonly recentFailures: readonly number[];
+      readonly prize: Prize;
+    });
