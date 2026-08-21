@@ -18,13 +18,13 @@ function renderAppNav() {
 }
 
 describe('AppNav', () => {
-  it('links back to the home screen', () => {
+  it('links back to the home screen', async () => {
     renderAppNav();
-    expect(screen.getByRole('link', { name: /rastro/i })).toHaveAttribute('href', '/');
+    expect(await screen.findByRole('link', { name: /rastro/i })).toHaveAttribute('href', '/');
   });
 
-  it('links to the scan screen', () => {
+  it('links to the scan screen', async () => {
     renderAppNav();
-    expect(screen.getByRole('link', { name: /escanear/i })).toHaveAttribute('href', '/scan');
+    expect(await screen.findByRole('link', { name: /escanear/i })).toHaveAttribute('href', '/scan');
   });
 });

@@ -1,22 +1,27 @@
-import { createFileRoute, Link, Outlet, useMatches, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, Outlet, useMatches } from '@tanstack/react-router';
+import { useState } from 'react';
 import { useSession } from '../../features/auth/session';
 import { StationCard } from '../../features/hunt/StationCard';
 import { useHunt } from '../../features/hunt/useHunt';
-import { ProgressConstellation } from '../../features/progress/ProgressConstellation';
+import { RouteMap } from '../../features/progress/RouteMap';
+import { toRouteMapNodes } from '../../features/progress/routeMapNodes';
+import { StationDetailModal } from '../../features/progress/StationDetailModal';
 import { useHuntProgress } from '../../features/progress/useHuntProgress';
-import type { ConstellationStation } from '../../features/progress/ProgressConstellation';
 
 export const Route = createFileRoute('/h/$huntId')({
   component: HuntScreen,
 });
 
+type ViewMode = 'map' | 'list';
+
 function HuntScreen() {
   const { huntId } = Route.useParams();
   const { uid } = useSession();
-  const navigate = useNavigate();
   const matches = useMatches();
   const hunt = useHunt(huntId);
   const { summary, cards, isLoading } = useHuntProgress(uid, huntId);
+  const [viewMode, setViewMode] = useState<ViewMode>('map');
+  const [selectedStationId, setSelectedStationId] = useState<string | null>(null);
 
   const isChildRouteActive = matches[matches.length - 1]?.routeId !== Route.id;
   if (isChildRouteActive) return <Outlet />;
@@ -29,20 +34,51 @@ function HuntScreen() {
     );
   }
 
-  const constellationStations: ConstellationStation[] = cards.map((card) => ({
-    id: card.id,
-    order: card.order,
-    solved: card.state === 'solved',
-  }));
+  const totalCount = summary?.totalCount ?? hunt?.stationCount ?? 0;
+  const solvedCount = summary?.solvedCount ?? 0;
+  const completionPct = summary?.completionPct ?? 0;
+  const selectedCard = cards.find((card) => card.id === selectedStationId);
 
   return (
     <main className="flex min-h-svh flex-col items-center gap-6 p-6">
-      <ProgressConstellation
-        stations={constellationStations}
-        totalCount={summary?.totalCount ?? hunt?.stationCount ?? 0}
-        solvedCount={summary?.solvedCount ?? 0}
-        completionPct={summary?.completionPct ?? 0}
-      />
+      <p className="text-sm text-muted-foreground">
+        {solvedCount} de {totalCount} · {completionPct}%
+      </p>
+      {completionPct === 100 && (
+        <p className="font-display text-lg font-semibold text-primary">¡Ruta completada!</p>
+      )}
+
+      <div className="flex gap-2 text-sm">
+        <button
+          type="button"
+          aria-pressed={viewMode === 'map'}
+          onClick={() => {
+            setViewMode('map');
+          }}
+          className={
+            viewMode === 'map'
+              ? 'rounded-md bg-primary px-3 py-1.5 font-semibold text-primary-foreground'
+              : 'rounded-md border border-border px-3 py-1.5 text-muted-foreground'
+          }
+        >
+          Mapa
+        </button>
+        <button
+          type="button"
+          aria-pressed={viewMode === 'list'}
+          onClick={() => {
+            setViewMode('list');
+          }}
+          className={
+            viewMode === 'list'
+              ? 'rounded-md bg-primary px-3 py-1.5 font-semibold text-primary-foreground'
+              : 'rounded-md border border-border px-3 py-1.5 text-muted-foreground'
+          }
+        >
+          Lista
+        </button>
+      </div>
+
       <Link
         to="/h/$huntId/prizes"
         params={{ huntId }}
@@ -61,22 +97,34 @@ function HuntScreen() {
         </p>
       )}
 
-      <div className="flex w-full max-w-sm flex-col gap-3">
-        {[...cards]
-          .sort((a, b) => a.order - b.order)
-          .map((card) => (
-            <StationCard
-              key={card.id}
-              card={card}
-              onSolve={() => {
-                void navigate({
-                  to: '/h/$huntId/s/$stationId',
-                  params: { huntId, stationId: card.id },
-                });
-              }}
-            />
-          ))}
-      </div>
+      {viewMode === 'map' ? (
+        <RouteMap nodes={toRouteMapNodes(cards, totalCount)} onSelect={setSelectedStationId} />
+      ) : (
+        <div className="flex w-full max-w-sm flex-col gap-3">
+          {[...cards]
+            .sort((a, b) => a.order - b.order)
+            .map((card) => (
+              <StationCard
+                key={card.id}
+                card={card}
+                onSolve={() => {
+                  setSelectedStationId(card.id);
+                }}
+              />
+            ))}
+        </div>
+      )}
+
+      {selectedCard && (
+        <StationDetailModal
+          card={selectedCard}
+          huntId={huntId}
+          hunt={hunt}
+          onClose={() => {
+            setSelectedStationId(null);
+          }}
+        />
+      )}
     </main>
   );
 }
