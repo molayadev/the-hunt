@@ -1,8 +1,12 @@
 import { useState } from 'react';
 
+interface TorchConstraintSet extends MediaTrackConstraintSet {
+  torch?: boolean;
+}
+
 export interface TorchTrack {
   getCapabilities?: () => { torch?: boolean };
-  applyConstraints: (constraints: MediaTrackConstraints) => Promise<void>;
+  applyConstraints: (constraints: { advanced: TorchConstraintSet[] }) => Promise<void>;
 }
 
 export interface Torch {
@@ -13,11 +17,20 @@ export interface Torch {
 
 export function useTorch(track: TorchTrack | null): Torch {
   const [isOn, setIsOn] = useState(false);
+  const isSupported = Boolean(track?.getCapabilities?.().torch);
+
   return {
     isOn,
-    isSupported: false,
+    isSupported,
     toggle: () => {
-      setIsOn(track === null);
+      if (!track || !isSupported) return;
+      const next = !isOn;
+      track
+        .applyConstraints({ advanced: [{ torch: next }] })
+        .then(() => {
+          setIsOn(next);
+        })
+        .catch(() => undefined);
     },
   };
 }
