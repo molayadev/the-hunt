@@ -4,14 +4,13 @@ export interface MapPoint {
 }
 
 export function mapNodePosition(order: number, columns: number, spacing: number): MapPoint {
-  void order;
-  void columns;
-  void spacing;
-  return { x: 0, y: 0 };
+  const index = order - 1;
+  const row = Math.floor(index / columns);
+  const colInRow = index % columns;
+  const col = row % 2 === 0 ? colInRow : columns - 1 - colInRow;
+  return { x: col * spacing, y: row * spacing };
 }
 
 export function mapRowCount(total: number, columns: number): number {
-  void total;
-  void columns;
-  return 1;
+  return Math.max(1, Math.ceil(total / columns));
 }
