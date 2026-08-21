@@ -21,18 +21,34 @@ export interface HuntDoc {
   readonly language: 'es' | 'en';
 }
 
+// An option's presentation is per-option, not per-challenge: a single
+// single_option/multiple_option question can mix text and image choices.
+export type ChallengeOptionDoc =
+  | { readonly id: string; readonly kind: 'text'; readonly text: string }
+  | {
+      readonly id: string;
+      readonly kind: 'image';
+      readonly imageUrl: string;
+      readonly alt: string;
+    };
+
 export type ChallengeDoc =
   | { readonly type: 'qr_only' }
-  | {
-      readonly type: 'multiple_choice';
-      readonly question: string;
-      readonly options: readonly { readonly id: string; readonly text: string }[];
-    }
   | {
       readonly type: 'text';
       readonly question: string;
       readonly placeholder?: string;
       readonly hint?: string;
+    }
+  | {
+      readonly type: 'single_option';
+      readonly question: string;
+      readonly options: readonly ChallengeOptionDoc[];
+    }
+  | {
+      readonly type: 'multiple_option';
+      readonly question: string;
+      readonly options: readonly ChallengeOptionDoc[];
     };
 
 export interface PrizeDoc {
@@ -52,8 +68,9 @@ export interface StationDoc {
 }
 
 export interface StationAnswerDoc {
-  readonly correctOptionId?: string;
-  readonly acceptedAnswers?: readonly string[];
+  readonly acceptedAnswers?: readonly string[]; // 'text'
+  readonly correctOptionId?: string; // 'single_option'
+  readonly correctOptionIds?: readonly string[]; // 'multiple_option' — exact set
 }
 
 export interface QrTokenDoc {

@@ -1,6 +1,7 @@
 import { FieldValue } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { isCorrectAnswer } from '../domain/answer/normalize';
+import { isCorrectOptionSet } from '../domain/answer/optionSet';
 import type { AttemptPolicy } from '../domain/attempts/window';
 import { attemptsLeft, retryAt, trimFailures } from '../domain/attempts/window';
 import type { SubmitAnswerInput, SubmitAnswerResult } from '../domain/callables';
@@ -63,9 +64,11 @@ export async function submitAnswerHandler(
     const answerSnap = await tx.get(answerRef);
     const secret = answerSnap.data() as StationAnswerDoc;
     const correct =
-      input.answer.kind === 'option'
+      input.answer.kind === 'single_option'
         ? input.answer.optionId === secret.correctOptionId
-        : isCorrectAnswer(input.answer.value, secret.acceptedAnswers ?? []);
+        : input.answer.kind === 'multiple_option'
+          ? isCorrectOptionSet(input.answer.optionIds, secret.correctOptionIds ?? [])
+          : isCorrectAnswer(input.answer.value, secret.acceptedAnswers ?? []);
 
     if (!correct) {
       const newFailures = trimFailures([...failures, now], policy);

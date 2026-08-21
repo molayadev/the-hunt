@@ -1,20 +1,31 @@
-export interface ChallengeOption {
-  readonly id: string;
-  readonly text: string;
-}
+// An option's presentation is per-option, not per-challenge: a single
+// single_option/multiple_option question can mix text and image choices.
+export type ChallengeOption =
+  | { readonly id: string; readonly kind: 'text'; readonly text: string }
+  | {
+      readonly id: string;
+      readonly kind: 'image';
+      readonly imageUrl: string;
+      readonly alt: string;
+    };
 
 export type Challenge =
   | { readonly type: 'qr_only' }
-  | {
-      readonly type: 'multiple_choice';
-      readonly question: string;
-      readonly options: readonly ChallengeOption[];
-    }
   | {
       readonly type: 'text';
       readonly question: string;
       readonly placeholder?: string;
       readonly hint?: string;
+    }
+  | {
+      readonly type: 'single_option';
+      readonly question: string;
+      readonly options: readonly ChallengeOption[];
+    }
+  | {
+      readonly type: 'multiple_option';
+      readonly question: string;
+      readonly options: readonly ChallengeOption[];
     };
 
 export interface Prize {

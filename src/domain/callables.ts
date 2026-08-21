@@ -49,8 +49,9 @@ export type StartHuntResult = Envelope &
   );
 
 export type AnswerInput =
-  | { readonly kind: 'option'; readonly optionId: string }
-  | { readonly kind: 'text'; readonly value: string };
+  | { readonly kind: 'text'; readonly value: string }
+  | { readonly kind: 'single_option'; readonly optionId: string }
+  | { readonly kind: 'multiple_option'; readonly optionIds: readonly string[] };
 
 export interface SubmitAnswerInput {
   readonly huntId: string;
