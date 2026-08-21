@@ -22,7 +22,6 @@ export async function submitAnswerHandler(
   const cardRef = db.doc(`progress/${progressId}/cards/${input.stationId}`);
   const eventRef = db.doc(`progress/${progressId}/events/${input.clientRequestId}`);
   const huntRef = db.doc(`hunts/${input.huntId}`);
-  const stationRef = db.doc(`hunts/${input.huntId}/stations/${input.stationId}`);
   const answerRef = db.doc(`hunts/${input.huntId}/stations/${input.stationId}/secret/answer`);
 
   return db.runTransaction(async (tx) => {
@@ -37,7 +36,8 @@ export async function submitAnswerHandler(
       return (eventSnap.data() as { result: SubmitAnswerResult }).result;
     }
 
-    if (!cardSnap.exists || (cardSnap.data() as CardDoc).state !== 'unlocked') {
+    const card = cardSnap.exists ? (cardSnap.data() as CardDoc) : undefined;
+    if (card?.state !== 'unlocked') {
       throw new HttpsError('permission-denied', 'The station is not unlocked.');
     }
 
@@ -47,7 +47,6 @@ export async function submitAnswerHandler(
       windowMs: hunt.attemptPolicy.windowHours * 60 * 60 * 1000,
     };
     const scope = hunt.attemptPolicy.scope;
-    const card = cardSnap.data() as CardDoc;
     const progress = progressSnap.exists ? (progressSnap.data() as ProgressDoc) : undefined;
     const failures = scope === 'hunt' ? (progress?.recentFailures ?? []) : card.recentFailures;
 
@@ -87,6 +86,9 @@ export async function submitAnswerHandler(
     const stationsSnap = await tx.get(
       db.collection(`hunts/${input.huntId}/stations`).orderBy('order'),
     );
+    const stationsById = new Map(
+      stationsSnap.docs.map((d) => [d.id, d.data() as StationDoc] as const),
+    );
     const orderedStationIds = stationsSnap.docs.map((d) => d.id);
 
     const currentState: ProgressState = progress
@@ -109,9 +111,15 @@ export async function submitAnswerHandler(
       (id) => !currentState.revealedStationIds.includes(id),
     );
     const pct = completionPct(nextState, hunt.stationCount);
+    const station = stationsById.get(input.stationId);
+    if (!station) throw new HttpsError('not-found', 'Station not found.');
 
-    const stationSnap = await tx.get(stationRef);
-    const station = stationSnap.data() as StationDoc;
+    const neighbourReveals = await Promise.all(
+      newlyRevealed.map(async (id) => {
+        const cardRef = db.doc(`progress/${progressId}/cards/${id}`);
+        return { id, cardRef, snap: await tx.get(cardRef) };
+      }),
+    );
 
     tx.set(
       progressRef,
@@ -130,6 +138,18 @@ export async function submitAnswerHandler(
       { merge: true },
     );
     tx.update(cardRef, { state: 'solved', prize: station.prize });
+
+    neighbourReveals.forEach(({ id, cardRef: neighbourCardRef, snap }) => {
+      if (snap.exists) return;
+      const neighbourStation = stationsById.get(id);
+      if (!neighbourStation) return;
+      tx.set(neighbourCardRef, {
+        order: neighbourStation.order,
+        title: neighbourStation.title,
+        clue: neighbourStation.clue,
+        state: 'revealed',
+      });
+    });
 
     const result = withServerNow({
       ok: true,
