@@ -16,7 +16,7 @@ describe('RouteMap', () => {
     render(<RouteMap nodes={nodes} onSelect={vi.fn()} />);
     expect(screen.getByRole('button', { name: /la fuente.*resuelta/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /el roble viejo.*resolver/i })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: /el quiosco.*bloqueada/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /el quiosco.*bloqueada/i })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /estación 4.*sin descubrir/i })).toBeInTheDocument();
   });
 
@@ -34,10 +34,16 @@ describe('RouteMap', () => {
     expect(onSelect).toHaveBeenCalledWith('a');
   });
 
-  it('does not select a locked or undiscovered station on click', async () => {
+  it('selects a locked station on click, to see why it needs its own QR', async () => {
     const onSelect = vi.fn();
     render(<RouteMap nodes={nodes} onSelect={onSelect} />);
-    await userEvent.click(screen.getByRole('img', { name: /el quiosco/i }));
+    await userEvent.click(screen.getByRole('button', { name: /el quiosco/i }));
+    expect(onSelect).toHaveBeenCalledWith('c');
+  });
+
+  it('does not select an undiscovered station on click', async () => {
+    const onSelect = vi.fn();
+    render(<RouteMap nodes={nodes} onSelect={onSelect} />);
     await userEvent.click(screen.getByRole('img', { name: /sin descubrir/i }));
     expect(onSelect).not.toHaveBeenCalled();
   });
