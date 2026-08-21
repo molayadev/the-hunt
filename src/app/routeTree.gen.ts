@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JoinRouteImport } from './routes/join'
+import { Route as ScanRouteImport } from './routes/scan'
 import { Route as HHuntIdRouteImport } from './routes/h.$huntId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const JoinRoute = JoinRouteImport.update({
   path: '/join',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HHuntIdRoute = HHuntIdRouteImport.update({
   id: '/h/$huntId',
   path: '/h/$huntId',
@@ -32,30 +38,34 @@ const HHuntIdRoute = HHuntIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/join': typeof JoinRoute
+  '/scan': typeof ScanRoute
   '/h/$huntId': typeof HHuntIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/join': typeof JoinRoute
+  '/scan': typeof ScanRoute
   '/h/$huntId': typeof HHuntIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/join': typeof JoinRoute
+  '/scan': typeof ScanRoute
   '/h/$huntId': typeof HHuntIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/join' | '/h/$huntId'
+  fullPaths: '/' | '/join' | '/scan' | '/h/$huntId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/join' | '/h/$huntId'
-  id: '__root__' | '/' | '/join' | '/h/$huntId'
+  to: '/' | '/join' | '/scan' | '/h/$huntId'
+  id: '__root__' | '/' | '/join' | '/scan' | '/h/$huntId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   JoinRoute: typeof JoinRoute
+  ScanRoute: typeof ScanRoute
   HHuntIdRoute: typeof HHuntIdRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JoinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/h/$huntId': {
       id: '/h/$huntId'
       path: '/h/$huntId'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   JoinRoute: JoinRoute,
+  ScanRoute: ScanRoute,
   HHuntIdRoute: HHuntIdRoute,
 }
 export const routeTree = rootRouteImport
