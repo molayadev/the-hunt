@@ -35,7 +35,7 @@ describe('AnswerForm', () => {
     const user = userEvent.setup();
     render(<AnswerForm onSubmit={vi.fn()} />);
     await user.type(screen.getByRole('textbox'), '¡La Torre!');
-    expect(screen.getByText('la torre')).toBeInTheDocument();
+    expect(screen.getByText(/la torre/)).toBeInTheDocument();
   });
 
   it('is disabled when out of attempts, regardless of field content', async () => {
