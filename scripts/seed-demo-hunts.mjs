@@ -59,7 +59,8 @@ const HUNTS = [
         order: 3,
         title: 'El Quiosco',
         clue: 'Donde suena la música los domingos.',
-        challenge: { type: 'qr_only' },
+        challenge: { type: 'text', question: '¿Qué día suena la música en el quiosco?' },
+        acceptedAnswers: ['domingo', 'domingos'],
         prize: {
           kind: 'digital',
           title: 'Cupón de helado',
@@ -126,7 +127,8 @@ const HUNTS = [
         order: 3,
         title: 'Riverside Bridge',
         clue: 'Cross the water to find the last clue.',
-        challenge: { type: 'qr_only' },
+        challenge: { type: 'text', question: 'How many arches does the bridge have?' },
+        acceptedAnswers: ['three', '3'],
         prize: {
           kind: 'physical',
           title: 'Keychain',
