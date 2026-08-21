@@ -55,7 +55,14 @@ function nodeLabel(node: RouteMapNode): string {
 function nodeFill(node: RouteMapNode): string {
   if (node.state === 'solved') return 'var(--primary)';
   if (node.state === 'unlockable') return 'var(--card)';
-  return 'var(--muted)';
+  if (node.state === 'locked') return 'var(--muted-foreground)';
+  return 'var(--background)';
+}
+
+function nodeStroke(node: RouteMapNode): string {
+  if (node.state === 'unlockable') return 'var(--primary)';
+  if (node.state === 'unknown') return 'var(--muted-foreground)';
+  return 'transparent';
 }
 
 export function RouteMap({ nodes, columns = DEFAULT_COLUMNS, onSelect }: RouteMapProps) {
@@ -105,8 +112,8 @@ export function RouteMap({ nodes, columns = DEFAULT_COLUMNS, onSelect }: RouteMa
             <circle
               r={NODE_RADIUS}
               fill={nodeFill(node)}
-              stroke={node.state === 'unlockable' ? 'var(--primary)' : 'transparent'}
-              strokeWidth={3}
+              stroke={nodeStroke(node)}
+              strokeWidth={2}
               role={interactive ? 'button' : 'img'}
               tabIndex={interactive ? 0 : -1}
               aria-label={nodeLabel(node)}
