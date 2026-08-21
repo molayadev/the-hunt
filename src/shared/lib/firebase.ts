@@ -5,6 +5,7 @@ import {
   collection,
   connectFirestoreEmulator,
   doc,
+  getDoc,
   getDocs,
   initializeFirestore,
   limit,
@@ -20,7 +21,18 @@ import { isSupported as isMessagingSupported } from 'firebase/messaging';
 import type { Unsubscribe } from 'firebase/messaging';
 
 export { onAuthStateChanged, signInAnonymously, httpsCallable };
-export { collection, doc, getDocs, limit, onSnapshot, query, serverTimestamp, setDoc, where };
+export {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  onSnapshot,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
+};
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? 'demo-api-key',
