@@ -19,6 +19,7 @@ const HUNTS = [
     joinCode: 'PARQUE2026',
     title: 'Ruta del Parque',
     tagline: 'Un paseo por el parque en busca de cuatro secretos escondidos.',
+    icon: '🌳',
     language: 'es',
     stations: [
       {
@@ -49,6 +50,13 @@ const HUNTS = [
           ],
         },
         correctOptionId: 'b',
+        // No QR sticker at this one — the code is carved into the tree itself.
+        unlock: 'password',
+        acceptedPasswords: ['raiz2026'],
+        location: {
+          mapsUrl: 'https://maps.app.goo.gl/exampleOldOak',
+          hint: 'Busca el árbol más grande cerca de la entrada norte.',
+        },
         prize: {
           kind: 'physical',
           title: 'Pegatina de hoja',
@@ -62,6 +70,8 @@ const HUNTS = [
         clue: 'Donde suena la música los domingos.',
         challenge: { type: 'text', question: '¿Qué día suena la música en el quiosco?' },
         acceptedAnswers: ['domingo', 'domingos'],
+        // No visit or QR needed — solvable from the clue alone.
+        unlock: 'none',
         prize: {
           kind: 'digital',
           title: 'Cupón de helado',
@@ -73,6 +83,10 @@ const HUNTS = [
         order: 4,
         title: 'La Estatua',
         clue: 'Mira a quien vigila la entrada principal.',
+        location: {
+          mapsUrl: 'https://maps.app.goo.gl/exampleStatuePlaza',
+          hint: 'Está justo frente a la puerta principal del parque.',
+        },
         challenge: {
           type: 'multiple_option',
           question: '¿Qué lleva la estatua encima?',
@@ -97,6 +111,7 @@ const HUNTS = [
     joinCode: 'CITYTRAIL',
     title: 'City Trail',
     tagline: 'A short walk through downtown landmarks, three stops, three secrets.',
+    icon: '🏙️',
     language: 'en',
     stations: [
       {
@@ -118,15 +133,19 @@ const HUNTS = [
         title: 'Market Square',
         clue: 'Where the town has traded for centuries.',
         challenge: {
-          type: 'multiple_choice',
+          type: 'single_option',
           question: 'What is sold every Saturday morning?',
           options: [
-            { id: 'a', text: 'Flowers' },
-            { id: 'b', text: 'Fish' },
-            { id: 'c', text: 'Books' },
+            { id: 'a', kind: 'text', text: 'Flowers' },
+            { id: 'b', kind: 'text', text: 'Fish' },
+            { id: 'c', kind: 'text', text: 'Books' },
           ],
         },
         correctOptionId: 'a',
+        location: {
+          mapsUrl: 'https://maps.app.goo.gl/exampleMarketSquare',
+          hint: 'The square with the big stone fountain in the middle.',
+        },
         prize: {
           kind: 'physical',
           title: 'Postcard',
@@ -140,6 +159,9 @@ const HUNTS = [
         clue: 'Cross the water to find the last clue.',
         challenge: { type: 'text', question: 'How many arches does the bridge have?' },
         acceptedAnswers: ['three', '3'],
+        // No sticker on the bridge either — the code is painted on a bench nearby.
+        unlock: 'password',
+        acceptedPasswords: ['arch3'],
         prize: {
           kind: 'physical',
           title: 'Keychain',
@@ -154,6 +176,7 @@ async function seedHunt(hunt) {
   await db.doc(`hunts/${hunt.id}`).set({
     title: hunt.title,
     tagline: hunt.tagline,
+    icon: hunt.icon,
     status: 'live',
     visibility: 'code',
     joinCode: hunt.joinCode,
@@ -170,38 +193,48 @@ async function seedHunt(hunt) {
       clue: station.clue,
       challenge: station.challenge,
       prize: station.prize,
+      ...(station.unlock ? { unlock: station.unlock } : {}),
+      ...(station.location ? { location: station.location } : {}),
     });
 
-    if (station.acceptedAnswers) {
-      await db.doc(`hunts/${hunt.id}/stations/${station.id}/secret/answer`).set({
-        acceptedAnswers: station.acceptedAnswers,
-      });
-    }
-    if (station.correctOptionId) {
-      await db.doc(`hunts/${hunt.id}/stations/${station.id}/secret/answer`).set({
-        correctOptionId: station.correctOptionId,
-      });
-    }
-    if (station.correctOptionIds) {
-      await db.doc(`hunts/${hunt.id}/stations/${station.id}/secret/answer`).set({
-        correctOptionIds: station.correctOptionIds,
-      });
+    const secret = {
+      ...(station.acceptedAnswers ? { acceptedAnswers: station.acceptedAnswers } : {}),
+      ...(station.correctOptionId ? { correctOptionId: station.correctOptionId } : {}),
+      ...(station.correctOptionIds ? { correctOptionIds: station.correctOptionIds } : {}),
+      ...(station.acceptedPasswords ? { acceptedPasswords: station.acceptedPasswords } : {}),
+    };
+    if (Object.keys(secret).length > 0) {
+      await db.doc(`hunts/${hunt.id}/stations/${station.id}/secret/answer`).set(secret);
     }
 
-    const token = `${hunt.id}-${station.id}`;
-    await db.doc(`qrTokens/${token}`).set({
-      huntId: hunt.id,
-      stationId: station.id,
-      active: true,
-      channel: 'physical',
-      redeemCount: 0,
-    });
+    // Only unlock: 'qr' (or unspecified, which defaults to it) stations get a
+    // real QR sticker — 'password' stations are found by their code instead,
+    // and 'none' stations need no physical proof at all.
+    if (!station.unlock || station.unlock === 'qr') {
+      const token = `${hunt.id}-${station.id}`;
+      await db.doc(`qrTokens/${token}`).set({
+        huntId: hunt.id,
+        stationId: station.id,
+        active: true,
+        channel: 'physical',
+        redeemCount: 0,
+      });
+    }
   }
 }
 
 for (const hunt of HUNTS) {
   await seedHunt(hunt);
-  const tokens = hunt.stations.map((s) => `${hunt.id}-${s.id}`).join(', ');
-  console.log(`Seeded "${hunt.title}" — join code ${hunt.joinCode} — tokens: ${tokens}`);
+  const tokens = hunt.stations
+    .filter((s) => !s.unlock || s.unlock === 'qr')
+    .map((s) => `${hunt.id}-${s.id}`)
+    .join(', ');
+  const passwords = hunt.stations
+    .filter((s) => s.unlock === 'password')
+    .map((s) => `${s.title}: ${s.acceptedPasswords[0]}`)
+    .join(', ');
+  console.log(`Seeded "${hunt.title}" — join code ${hunt.joinCode}`);
+  console.log(`  QR tokens: ${tokens}`);
+  if (passwords) console.log(`  Passwords: ${passwords}`);
 }
 console.log('Done.');
