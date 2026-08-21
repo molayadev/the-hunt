@@ -54,6 +54,7 @@ describe('ProgressConstellation', () => {
         completionPct={91}
       />,
     );
-    expect(screen.getAllByTitle(/Estación/)).toHaveLength(2);
+    expect(screen.getByRole('img', { name: 'Estación 1 — resuelta' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Estación 2' })).toBeInTheDocument();
   });
 });
