@@ -18,6 +18,11 @@ export function StationCard({ card, onSolve }: StationCardProps) {
       </header>
       <h3 className="font-display text-lg font-semibold text-foreground">{card.title}</h3>
       <p className="text-sm text-muted-foreground">{card.clue}</p>
+      {card.state === 'revealed' && (
+        <p className="text-sm text-muted-foreground">
+          Aún bloqueada — escanea su código QR para desbloquearla.
+        </p>
+      )}
       {card.state === 'unlocked' && (
         <button
           type="button"
