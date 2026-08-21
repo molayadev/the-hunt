@@ -841,16 +841,18 @@ Verificado end-to-end contra el emulador: unirse por código navega a `/h/$huntI
 
 **Pendiente de Fase 3 antes de cerrarla del todo:** vincular cuenta anónima a email (§13.5), pantalla de detalle de estación (`/h/$huntId/s/$stationId`) que combine `AnswerForm` + `AttemptMeter` para responder de verdad, y consumo real de `submitAnswer`/`redeemQr` desde el cliente (por ahora solo están sembrados datos directamente para probar).
 
-### Fase 4 — Campo
+### Fase 4 — Campo ✅
 
 ```
-feat(scan): Add QR scanner with BarcodeDetector and wasm fallback
-feat(scan): Add torch toggle and haptic feedback on decode
-test(scan): Add failing specs for offline scan queue idempotency
-feat(scan): Implement IndexedDB queue with background sync
-feat(notifications): Add FCM permission flow and token registration
-feat(prizes): Add prize wallet and redemption instructions
+feat(scan): Add QR scanner with BarcodeDetector and wasm fallback ✅ (jsQR, no wasm en sí, mismo rol de fallback)
+feat(scan): Add torch toggle and haptic feedback on decode ✅
+test(scan): Add failing specs for offline scan queue idempotency ✅
+feat(scan): Implement IndexedDB queue with background sync ✅ (reintento al reconectar en vez de la Background Sync API — más portable: iOS Safari no la soporta)
+feat(notifications): Add FCM permission flow and token registration ✅ (register()/onRegistered(), reemplazo no-deprecado de getToken())
+feat(prizes): Add prize wallet and redemption instructions ✅
 ```
+
+Sin cámara real disponible para verificar el decodificado en vivo: `CameraPermissionGate` se verificó en el navegador (deniega sin error críptico), y `useQrDecoder`/`QrViewfinder` quedan como código de integración sin test dedicado, igual que `shared/lib/firebase.ts`.
 
 ### Fase 5 — Cierre
 
