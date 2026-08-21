@@ -820,21 +820,26 @@ feat(functions): Implement submitAnswer callable inside a transaction
 feat(functions): Enforce App Check on all callables
 ```
 
-### Fase 3 — Cliente ← en curso
+### Fase 3 — Cliente ✅
 
 ```
 feat(config): Initialize the Firebase client SDK ✅
 feat(auth): Add anonymous sign-in session ✅ (falta account linking)
 test(hunt): Add failing specs for join code normalization ✅
 feat(hunt): Implement join code normalization ✅
-feat(hunt): Implement join-by-code flow ✅ (falta la pantalla de resumen de ruta)
-test(station): Add failing specs for locked station content leakage
-feat(station): Implement station card with clue and challenge panel
-test(attempts): Add failing specs for attempt meter countdown state
-feat(attempts): Implement attempt meter and quiz form
-test(progress): Add failing specs for constellation completion state
-feat(progress): Implement progress constellation
+feat(hunt): Implement join-by-code flow ✅
+test(station): Add failing specs for locked station content leakage ✅
+feat(station): Implement station card with clue and challenge panel ✅ (StationCard; AnswerForm cubre el reto)
+test(attempts): Add failing specs for attempt meter countdown state ✅
+feat(attempts): Implement attempt meter and quiz form ✅ (AttemptMeter + AnswerForm)
+test(progress): Add failing specs for constellation completion state ✅
+feat(progress): Implement progress constellation ✅
+feat(hunt): Wire the hunt overview screen to live Firestore progress ✅
 ```
+
+Verificado end-to-end contra el emulador: unirse por código navega a `/h/$huntId`; desbloquear/resolver una estación (sembrado directamente en Firestore para simular `redeemQr`/`submitAnswer`) actualiza `ProgressConstellation` y las `StationCard` en vivo, sin recargar.
+
+**Pendiente de Fase 3 antes de cerrarla del todo:** vincular cuenta anónima a email (§13.5), pantalla de detalle de estación (`/h/$huntId/s/$stationId`) que combine `AnswerForm` + `AttemptMeter` para responder de verdad, y consumo real de `submitAnswer`/`redeemQr` desde el cliente (por ahora solo están sembrados datos directamente para probar).
 
 ### Fase 4 — Campo
 
