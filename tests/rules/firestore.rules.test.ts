@@ -5,7 +5,16 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from 'firebase/firestore';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 let testEnv: RulesTestEnvironment;
@@ -109,6 +118,17 @@ describe('progress/{progressId}', () => {
         recentFailures: [Date.now()],
       }),
     );
+  });
+
+  it('a player can list their own progress docs by uid, for the home screen', async () => {
+    const ownQuery = query(collection(playerDb(), 'progress'), where('uid', '==', PLAYER_UID));
+    const snapshot = await assertSucceeds(getDocs(ownQuery));
+    expect(snapshot.docs).toHaveLength(1);
+  });
+
+  it("a player cannot list another player's progress docs by uid", async () => {
+    const othersQuery = query(collection(playerDb(), 'progress'), where('uid', '==', OTHER_UID));
+    await assertFails(getDocs(othersQuery));
   });
 
   it('a player can read their own cards', async () => {
