@@ -39,12 +39,12 @@ const HUNTS = [
         title: 'El Roble Viejo',
         clue: 'El árbol más alto del parque guarda un secreto en su base.',
         challenge: {
-          type: 'multiple_choice',
+          type: 'single_option',
           question: '¿De qué color es la placa que hay en el tronco?',
           options: [
-            { id: 'a', text: 'Roja' },
-            { id: 'b', text: 'Verde' },
-            { id: 'c', text: 'Azul' },
+            { id: 'a', kind: 'text', text: 'Roja' },
+            { id: 'b', kind: 'text', text: 'Verde' },
+            { id: 'c', kind: 'text', text: 'Azul' },
           ],
         },
         correctOptionId: 'b',
@@ -72,8 +72,17 @@ const HUNTS = [
         order: 4,
         title: 'La Estatua',
         clue: 'Mira a quien vigila la entrada principal.',
-        challenge: { type: 'text', question: '¿Qué sostiene la estatua en la mano?' },
-        acceptedAnswers: ['un libro', 'libro'],
+        challenge: {
+          type: 'multiple_option',
+          question: '¿Qué lleva la estatua encima?',
+          options: [
+            { id: 'libro', kind: 'text', text: 'Un libro' },
+            { id: 'espada', kind: 'text', text: 'Una espada' },
+            { id: 'escudo', kind: 'text', text: 'Un escudo' },
+            { id: 'corona', kind: 'text', text: 'Una corona' },
+          ],
+        },
+        correctOptionIds: ['libro', 'espada'],
         prize: {
           kind: 'physical',
           title: 'Medalla de bronce',
@@ -168,6 +177,11 @@ async function seedHunt(hunt) {
     if (station.correctOptionId) {
       await db.doc(`hunts/${hunt.id}/stations/${station.id}/secret/answer`).set({
         correctOptionId: station.correctOptionId,
+      });
+    }
+    if (station.correctOptionIds) {
+      await db.doc(`hunts/${hunt.id}/stations/${station.id}/secret/answer`).set({
+        correctOptionIds: station.correctOptionIds,
       });
     }
 

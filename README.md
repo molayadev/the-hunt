@@ -42,15 +42,15 @@ Al unirte con el código se desbloquea automáticamente la primera estación (La
 
 Respuestas:
 
-| Estación         | Respuesta              |
-| ---------------- | ---------------------- |
-| La Fuente        | `circular` o `redonda` |
-| El Roble Viejo   | opción "Verde"         |
-| El Quiosco       | `domingo` o `domingos` |
-| La Estatua       | `un libro` o `libro`   |
-| Old Clock Tower  | `four` o `4`           |
-| Market Square    | opción "Flowers"       |
-| Riverside Bridge | `three` o `3`          |
+| Estación         | Respuesta                                  |
+| ---------------- | ------------------------------------------ |
+| La Fuente        | `circular` o `redonda`                     |
+| El Roble Viejo   | opción única: "Verde"                      |
+| El Quiosco       | `domingo` o `domingos`                     |
+| La Estatua       | opción múltiple: "Un libro" + "Una espada" |
+| Old Clock Tower  | `four` o `4`                               |
+| Market Square    | opción única: "Flowers"                    |
+| Riverside Bridge | `three` o `3`                              |
 
 El script es idempotente (usa IDs fijos), así que se puede volver a ejecutar tras un `npm run test:functions` o `npm run test:rules` (que limpian el emulador) sin duplicar nada.
 
