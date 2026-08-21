@@ -18,6 +18,7 @@ const HUNTS = [
     id: 'demo-parque',
     joinCode: 'PARQUE2026',
     title: 'Ruta del Parque',
+    tagline: 'Un paseo por el parque en busca de cuatro secretos escondidos.',
     language: 'es',
     stations: [
       {
@@ -95,6 +96,7 @@ const HUNTS = [
     id: 'demo-city',
     joinCode: 'CITYTRAIL',
     title: 'City Trail',
+    tagline: 'A short walk through downtown landmarks, three stops, three secrets.',
     language: 'en',
     stations: [
       {
@@ -151,6 +153,7 @@ const HUNTS = [
 async function seedHunt(hunt) {
   await db.doc(`hunts/${hunt.id}`).set({
     title: hunt.title,
+    tagline: hunt.tagline,
     status: 'live',
     visibility: 'code',
     joinCode: hunt.joinCode,

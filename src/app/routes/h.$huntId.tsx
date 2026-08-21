@@ -41,6 +41,13 @@ function HuntScreen() {
 
   return (
     <main className="flex min-h-svh flex-col items-center gap-6 p-6">
+      {hunt && (
+        <header className="flex max-w-sm flex-col items-center gap-1 text-center">
+          <h1 className="font-display text-2xl font-semibold text-foreground">{hunt.title}</h1>
+          {hunt.tagline && <p className="text-sm text-muted-foreground">{hunt.tagline}</p>}
+        </header>
+      )}
+
       <p className="text-sm text-muted-foreground">
         {solvedCount} de {totalCount} · {completionPct}%
       </p>
