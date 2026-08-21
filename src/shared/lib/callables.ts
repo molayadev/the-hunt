@@ -1,6 +1,8 @@
 import type {
   RedeemQrInput,
   RedeemQrResult,
+  StartHuntInput,
+  StartHuntResult,
   SubmitAnswerInput,
   SubmitAnswerResult,
 } from '../../domain/callables';
@@ -12,3 +14,5 @@ export const submitAnswer = httpsCallable<SubmitAnswerInput, SubmitAnswerResult>
   functions,
   'submitAnswer',
 );
+
+export const startHunt = httpsCallable<StartHuntInput, StartHuntResult>(functions, 'startHunt');
