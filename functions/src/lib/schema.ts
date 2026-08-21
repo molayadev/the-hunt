@@ -9,6 +9,8 @@ export interface HuntDoc {
   readonly title: string;
   readonly tagline?: string;
   readonly coverUrl?: string;
+  // An emoji, or a link to a small badge image — shown next to the title.
+  readonly icon?: string;
   readonly status: 'draft' | 'live' | 'closed';
   readonly visibility: 'public' | 'code';
   readonly joinCode?: string;
