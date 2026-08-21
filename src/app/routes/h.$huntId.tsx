@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useSession } from '../../features/auth/session';
 import { StationCard } from '../../features/hunt/StationCard';
 import { ProgressConstellation } from '../../features/progress/ProgressConstellation';
@@ -36,6 +36,13 @@ function HuntScreen() {
         solvedCount={summary?.solvedCount ?? 0}
         completionPct={summary?.completionPct ?? 0}
       />
+      <Link
+        to="/h/$huntId/prizes"
+        params={{ huntId }}
+        className="text-sm font-semibold text-primary underline"
+      >
+        Ver mis premios
+      </Link>
       <div className="flex w-full max-w-sm flex-col gap-3">
         {[...cards]
           .sort((a, b) => a.order - b.order)
