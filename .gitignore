@@ -20,6 +20,8 @@ dist-ssr
 
 # Firebase Functions build output
 functions/lib
+functions/node_modules
+admin/node_modules
 
 # Test coverage
 coverage

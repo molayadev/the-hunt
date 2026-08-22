@@ -1,10 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import type { HuntFormValues } from './saveHunt';
 
 export interface HuntFormProps {
+  readonly huntId: string | null;
   readonly initialValues: HuntFormValues;
   readonly isPending: boolean;
   readonly onSubmit: (values: HuntFormValues) => void;
@@ -14,7 +16,7 @@ const inputClass = 'rounded-md border border-neutral-300 px-3 py-2';
 const labelClass = 'text-sm text-neutral-600';
 const fieldClass = 'flex flex-col gap-1';
 
-export function HuntForm({ initialValues, isPending, onSubmit }: HuntFormProps) {
+export function HuntForm({ huntId, initialValues, isPending, onSubmit }: HuntFormProps) {
   const [values, setValues] = useState<HuntFormValues>(initialValues);
 
   function set<K extends keyof HuntFormValues>(key: K, value: HuntFormValues[K]) {
@@ -143,22 +145,17 @@ export function HuntForm({ initialValues, isPending, onSubmit }: HuntFormProps) 
       </div>
 
       <div className={fieldClass}>
-        <label htmlFor="stationCount" className={labelClass}>
-          Número de estaciones
-        </label>
-        <input
-          id="stationCount"
-          type="number"
-          min={0}
-          value={values.stationCount}
-          onChange={(e) => {
-            set('stationCount', Number(e.target.value));
-          }}
-          className={inputClass}
-        />
-        <p className="text-xs text-neutral-400">
-          Se mantendrá manual hasta que exista la gestión de estaciones.
-        </p>
+        <span className={labelClass}>Estaciones</span>
+        {huntId ? (
+          <Link
+            href={`/stations?huntId=${huntId}`}
+            className="self-start text-sm font-semibold text-neutral-900 underline"
+          >
+            {values.stationCount} estaciones — gestionar
+          </Link>
+        ) : (
+          <p className="text-sm text-neutral-400">Guarda la ruta primero para añadir estaciones.</p>
+        )}
       </div>
 
       <fieldset className="flex flex-col gap-3 rounded-md border border-neutral-200 p-3">

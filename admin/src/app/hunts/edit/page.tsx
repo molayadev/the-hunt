@@ -82,6 +82,7 @@ function EditHuntForm() {
       )}
       <HuntForm
         key={id ?? 'new'}
+        huntId={id}
         initialValues={initialValues}
         isPending={isPending}
         onSubmit={(values) => {

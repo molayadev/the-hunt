@@ -9,6 +9,7 @@ import {
 import {
   collection,
   connectFirestoreEmulator,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -26,6 +27,7 @@ export {
   signInWithEmailAndPassword,
   signOut,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
