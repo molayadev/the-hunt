@@ -1,5 +1,13 @@
 {
   "projects": {
     "default": "demo-rastro"
+  },
+  "targets": {
+    "demo-rastro": {
+      "hosting": {
+        "player": ["demo-rastro"],
+        "admin": ["demo-rastro-admin"]
+      }
+    }
   }
 }

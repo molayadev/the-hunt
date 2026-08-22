@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "dev": "vite",
+    "admin:dev": "npm --prefix admin run dev",
     "emulators": "cross-env FUNCTIONS_DISCOVERY_TIMEOUT=30 firebase emulators:start --project demo-rastro",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
@@ -24,6 +25,7 @@
     "test:functions": "firebase emulators:exec --only firestore \"npm --prefix functions test\"",
     "test:e2e": "playwright test",
     "seed:demo": "node scripts/seed-demo-hunts.mjs",
+    "grant-admin": "node scripts/grant-admin.mjs",
     "prepare": "husky"
   },
   "dependencies": {

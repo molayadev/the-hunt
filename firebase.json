@@ -11,11 +11,21 @@
       "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
     }
   ],
-  "hosting": {
-    "public": "dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [{ "source": "**", "destination": "/index.html" }]
-  },
+  "hosting": [
+    {
+      "target": "player",
+      "public": "dist",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [{ "source": "**", "destination": "/index.html" }]
+    },
+    {
+      "target": "admin",
+      "public": "admin/out",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "cleanUrls": true,
+      "predeploy": ["npm --prefix admin run build"]
+    }
+  ],
   "emulators": {
     "auth": { "host": "127.0.0.1", "port": 9099 },
     "functions": { "host": "127.0.0.1", "port": 5001 },

@@ -11,7 +11,9 @@ import globals from 'globals';
 import ts from 'typescript-eslint';
 
 export default ts.config(
-  { ignores: ['dist/**', 'coverage/**', 'src/app/routeTree.gen.ts', 'functions/lib/**'] },
+  {
+    ignores: ['dist/**', 'coverage/**', 'src/app/routeTree.gen.ts', 'functions/lib/**', 'admin/**'],
+  },
   {
     files: ['**/*.js'],
     ...js.configs.recommended,
