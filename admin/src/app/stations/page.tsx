@@ -46,12 +46,20 @@ function StationsList() {
       </Link>
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Estaciones</h1>
-        <Link
-          href={`/stations/edit?huntId=${huntId}`}
-          className="rounded-md bg-neutral-900 px-4 py-2 font-semibold text-white"
-        >
-          + Nueva estación
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href={`/stations/print?huntId=${huntId}`}
+            className="rounded-md border border-neutral-300 px-4 py-2 font-semibold text-neutral-900"
+          >
+            Imprimir todos los QR
+          </Link>
+          <Link
+            href={`/stations/edit?huntId=${huntId}`}
+            className="rounded-md bg-neutral-900 px-4 py-2 font-semibold text-white"
+          >
+            + Nueva estación
+          </Link>
+        </div>
       </div>
 
       {isLoading && <p className="text-neutral-500">Cargando…</p>}
