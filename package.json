@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "functions",
+    "admin",
+    "packages/schema"
+  ],
   "scripts": {
     "dev": "vite",
     "emulators": "cross-env FUNCTIONS_DISCOVERY_TIMEOUT=30 firebase emulators:start --project demo-rastro",
