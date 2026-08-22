@@ -5,13 +5,25 @@ service cloud.firestore {
       return request.auth != null && docId.split('_')[0] == request.auth.uid;
     }
 
-    match /hunts/{huntId} {
-      allow read: if request.auth != null && resource.data.status == 'live';
-      allow write: if false;
-      match /stations/{document=**} { allow read, write: if false; }
+    // Existence of admins/{uid} grants admin-app access — see
+    // admin/README.md for how the first admin is bootstrapped.
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(db)/documents/admins/$(request.auth.uid));
     }
 
-    match /qrTokens/{token} { allow read, write: if false; }
+    match /admins/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, write: if false;
+    }
+
+    match /hunts/{huntId} {
+      allow read: if (request.auth != null && resource.data.status == 'live') || isAdmin();
+      allow write: if isAdmin();
+      match /stations/{document=**} { allow read, write: if isAdmin(); }
+    }
+
+    match /qrTokens/{token} { allow read: if isAdmin(); allow write: if isAdmin(); }
 
     match /progress/{progressId} {
       // The isOwner(progressId) branch covers get(); it can't be evaluated

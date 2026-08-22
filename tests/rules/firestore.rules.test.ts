@@ -21,6 +21,7 @@ let testEnv: RulesTestEnvironment;
 
 const PLAYER_UID = 'player-1';
 const OTHER_UID = 'player-2';
+const ADMIN_UID = 'admin-1';
 const HUNT_ID = 'hunt-1';
 const STATION_ID = 'station-1';
 
@@ -73,10 +74,15 @@ beforeEach(async () => {
       challenge: { type: 'text', question: '¿Qué edificio es?' },
       state: 'unlocked',
     });
+    await setDoc(doc(db, `hunts/${HUNT_ID}/stations/${STATION_ID}/secret/answer`), {
+      acceptedAnswers: ['la torre'],
+    });
+    await setDoc(doc(db, `admins/${ADMIN_UID}`), { email: 'admin@example.com' });
   });
 });
 
 const playerDb = () => testEnv.authenticatedContext(PLAYER_UID).firestore();
+const adminDb = () => testEnv.authenticatedContext(ADMIN_UID).firestore();
 
 describe('hunts/{huntId}/stations', () => {
   it('an authenticated player cannot get a station', async () => {
@@ -146,5 +152,54 @@ describe('progress/{progressId}', () => {
     expect(data).not.toHaveProperty('answer');
     expect(data?.challenge).not.toHaveProperty('acceptedAnswers');
     expect(data?.challenge).not.toHaveProperty('correctOptionId');
+  });
+});
+
+describe('admins/{uid}', () => {
+  it('anyone signed in can check their own admin status', async () => {
+    await assertSucceeds(getDoc(doc(playerDb(), `admins/${PLAYER_UID}`)));
+    await assertSucceeds(getDoc(doc(adminDb(), `admins/${ADMIN_UID}`)));
+  });
+
+  it("a player cannot read another user's admin doc", async () => {
+    await assertFails(getDoc(doc(playerDb(), `admins/${ADMIN_UID}`)));
+  });
+
+  it('no one can list admins or grant themselves admin access', async () => {
+    await assertFails(getDocs(collection(playerDb(), 'admins')));
+    await assertFails(setDoc(doc(playerDb(), `admins/${PLAYER_UID}`), { email: 'x@example.com' }));
+  });
+});
+
+describe('admin access to hunt content', () => {
+  it('an admin can read and write a hunt', async () => {
+    await assertSucceeds(getDoc(doc(adminDb(), `hunts/${HUNT_ID}`)));
+    await assertSucceeds(updateDoc(doc(adminDb(), `hunts/${HUNT_ID}`), { status: 'draft' }));
+  });
+
+  it('a non-admin still cannot write a hunt', async () => {
+    await assertFails(updateDoc(doc(playerDb(), `hunts/${HUNT_ID}`), { status: 'draft' }));
+  });
+
+  it('an admin can read and write a station, including its secret answer', async () => {
+    await assertSucceeds(getDoc(doc(adminDb(), `hunts/${HUNT_ID}/stations/${STATION_ID}`)));
+    await assertSucceeds(
+      setDoc(doc(adminDb(), `hunts/${HUNT_ID}/stations/${STATION_ID}/secret/answer`), {
+        acceptedAnswers: ['la torre nueva'],
+      }),
+    );
+  });
+
+  it('an admin can read and write qrTokens', async () => {
+    await assertSucceeds(getDoc(doc(adminDb(), 'qrTokens/qr-1')));
+    await assertSucceeds(
+      setDoc(doc(adminDb(), 'qrTokens/qr-2'), {
+        huntId: HUNT_ID,
+        stationId: STATION_ID,
+        active: true,
+        channel: 'physical',
+        redeemCount: 0,
+      }),
+    );
   });
 });
